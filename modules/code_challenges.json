@@ -1,0 +1,123 @@
+[
+  {
+    "id": "code_001",
+    "title": "Квадрат числа",
+    "lang": "Python",
+    "topic": "math",
+    "difficulty": 1,
+    "description": "Напиши функцию square(x), которая принимает число и возвращает его квадрат.",
+    "hint": "Используй оператор умножения: return x * x",
+    "starter_code": "def square(x):\n    # Твой код здесь\n    pass",
+    "tests": [
+      "assert square(2) == 4, 'Ожидалось 4'",
+      "assert square(-3) == 9, 'Ожидалось 9'"
+    ],
+    "xp": 10
+  },
+  {
+    "description": "Напишите SQL-запрос, который выбирает id и имена (`id`, `name`) всех пользователей из таблицы `users`, которые активны (статус `status` равен 1) и старше 25 лет (значение поля `age` больше 25). Обязательно включите в условие фильтр по активности `status = 1` и по возрасту `age > 25`.",
+    "difficulty": 1,
+    "hint": "Используйте оператор `WHERE` и логический `AND` для объединения условий по возрасту и статусу.",
+    "lang": "SQL",
+    "reference_sql": "SELECT id, name FROM users WHERE age > 25 AND status = 1;",
+    "setup_sql": "CREATE TABLE users (\n    id INTEGER PRIMARY KEY,\n    name TEXT NOT NULL,\n    age INTEGER,\n    status INTEGER\n);\n\nINSERT INTO users (id, name, age, status) VALUES\n(1, 'Alice', 30, 1),\n(2, 'Bob', 22, 1),\n(3, 'Charlie', 28, 0),\n(4, 'Diana', 35, 1),\n(5, 'Evan', 24, 1);\n",
+    "starter_code": "-- Напиши свой SQL запрос здесь\n",
+    "title": "Активные пользователи старше 25 лет",
+    "topic": "запросы",
+    "xp": 10,
+    "id": "code_002"
+  },
+  {
+    "description": "Напишите SQL-запрос, который возвращает имена клиентов (`name`) и суммы их заказов (`total_amount`) только для завершенных заказов (статус `status` равен 'completed'), где общая сумма заказа строго больше 1000 (`total_amount > 1000`). Для этого необходимо выполнить соединение (JOIN) таблиц `customers` и `orders` по полю `customer_id`. Обязательно укажите условия: `status = 'completed'` и `total_amount > 1000`.",
+    "difficulty": 1,
+    "hint": "Используйте INNER JOIN для объединения таблиц `customers` и `orders`, а в предложении WHERE задайте фильтры по статусу и сумме.",
+    "lang": "SQL",
+    "reference_sql": "SELECT c.name, o.total_amount FROM customers c JOIN orders o ON c.id = o.customer_id WHERE o.status = 'completed' AND o.total_amount > 1000;",
+    "setup_sql": "CREATE TABLE customers (\n    id INTEGER PRIMARY KEY,\n    name TEXT NOT NULL\n);\n\nCREATE TABLE orders (\n    id INTEGER PRIMARY KEY,\n    customer_id INTEGER,\n    total_amount DECIMAL(10, 2),\n    status TEXT,\n    FOREIGN KEY (customer_id) REFERENCES customers(id)\n);\n\nINSERT INTO customers (id, name) VALUES\n(1, 'OOO Alpha'),\n(2, 'OOO Beta'),\n(3, 'OOO Gamma');\n\nINSERT INTO orders (id, customer_id, total_amount, status) VALUES\n(1, 1, 1500.00, 'completed'),\n(2, 1, 500.00, 'completed'),\n(3, 2, 2000.00, 'pending'),\n(4, 3, 1200.50, 'completed'),\n(5, 2, 300.00, 'completed');\n",
+    "starter_code": "-- Напиши свой SQL запрос здесь\n",
+    "title": "Завершенные заказы на сумму больше 1000",
+    "topic": "запросы",
+    "xp": 15,
+    "id": "code_003"
+  },
+  {
+    "description": "Напишите функцию sum_array, которая принимает список чисел и возвращает сумму всех его элементов. Для пустого списка верните 0.",
+    "difficulty": 1,
+    "hint": "Используйте встроенную функцию sum или цикл for.",
+    "lang": "Python",
+    "starter_code": "def sum_array(arr):\n    # TODO: верните сумму элементов списка\n    pass",
+    "tests": [
+      "assert sum_array([1, 2, 3]) == 6",
+      "assert sum_array([]) == 0",
+      "assert sum_array([-5, 10, 5]) == 10"
+    ],
+    "title": "Сумма элементов массива",
+    "topic": "массивы",
+    "xp": 10,
+    "id": "code_004"
+  },
+  {
+    "description": "Напишите функцию max_value, которая принимает непустой список чисел и возвращает максимальный элемент.",
+    "difficulty": 1,
+    "hint": "Можно использовать встроенную функцию max или сравнивать элементы в цикле.",
+    "lang": "Python",
+    "starter_code": "def max_value(arr):\n    # TODO: найдите и верните максимальный элемент\n    pass",
+    "tests": [
+      "assert max_value([3, 1, 4, 1, 5]) == 5",
+      "assert max_value([-10, -2, -7]) == -2",
+      "assert max_value([42]) == 42"
+    ],
+    "title": "Максимальный элемент массива",
+    "topic": "массивы",
+    "xp": 12,
+    "id": "code_005"
+  },
+  {
+    "description": "Напишите функцию reverse_array, которая принимает список и возвращает новый список с элементами в обратном порядке.",
+    "difficulty": 1,
+    "hint": "Используйте срез arr[::-1] или метод reversed.",
+    "lang": "Python",
+    "starter_code": "def reverse_array(arr):\n    # TODO: верните список в обратном порядке\n    pass",
+    "tests": [
+      "assert reverse_array([1, 2, 3]) == [3, 2, 1]",
+      "assert reverse_array([]) == []",
+      "assert reverse_array([7]) == [7]"
+    ],
+    "title": "Разворот массива",
+    "topic": "массивы",
+    "xp": 12,
+    "id": "code_006"
+  },
+  {
+    "description": "Напишите функцию count_even, которая принимает список целых чисел и возвращает количество чётных элементов.",
+    "difficulty": 1,
+    "hint": "Чётное число делится на 2 без остатка: n % 2 == 0.",
+    "lang": "Python",
+    "starter_code": "def count_even(arr):\n    # TODO: посчитайте количество чётных чисел\n    pass",
+    "tests": [
+      "assert count_even([1, 2, 3, 4, 6]) == 3",
+      "assert count_even([]) == 0",
+      "assert count_even([-2, -3, 0]) == 2"
+    ],
+    "title": "Подсчёт чётных чисел",
+    "topic": "массивы",
+    "xp": 18,
+    "id": "code_007"
+  },
+  {
+    "description": "Напишите функцию unique_preserve_order, которая принимает список и возвращает новый список без повторяющихся элементов, сохраняя порядок первого появления.",
+    "difficulty": 1,
+    "hint": "Можно использовать множество для проверки уже встреченных элементов и список для результата.",
+    "lang": "Python",
+    "starter_code": "def unique_preserve_order(arr):\n    # TODO: верните список без дубликатов\n    pass",
+    "tests": [
+      "assert unique_preserve_order([1, 2, 1, 3, 2]) == [1, 2, 3]",
+      "assert unique_preserve_order([]) == []",
+      "assert unique_preserve_order([1, 1, 1]) == [1]"
+    ],
+    "title": "Удаление дубликатов с сохранением порядка",
+    "topic": "массивы",
+    "xp": 20,
+    "id": "code_008"
+  }
+]

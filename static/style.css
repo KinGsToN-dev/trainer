@@ -1,0 +1,176 @@
+﻿:root {
+    --bg-color: #1e1e2e;
+    --card-bg: #2b2b3d;
+    --text-color: #cdd6f4;
+    --primary-color: #89b4fa;
+    --secondary-color: #a6e3a1;
+    --accent-color: #f38ba8;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background-color: var(--card-bg);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    text-align: center;
+    width: 400px;
+}
+
+h1 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #a6adc8;
+    margin-bottom: 30px;
+}
+
+.stats-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.stats-card h3 {
+    margin-top: 0;
+    font-size: 16px;
+    color: var(--secondary-color);
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.btn {
+    text-decoration: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: opacity 0.2s;
+}
+
+.btn:hover {
+    opacity: 0.8;
+}
+
+.btn.primary {
+    background-color: var(--primary-color);
+    color: #11111b;
+}
+
+.btn.secondary {
+    background-color: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.footer {
+    margin-top: 30px;
+    font-size: 12px;
+    color: #585b70;
+}
+
+/* Дополнительные стили для тренировки */
+.progress-bar {
+    font-size: 14px;
+    color: #a6adc8;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.question-text {
+    font-size: 18px;
+    line-height: 1.5;
+    margin-bottom: 25px;
+    color: #f5e0dc;
+}
+
+.input-field {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 2px solid #45475a;
+    background-color: #11111b;
+    color: white;
+    border-radius: 6px;
+    font-size: 16px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.input-field:focus {
+    border-color: var(--primary-color);
+}
+
+.feedback {
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 15px;
+}
+
+.feedback.success {
+    background-color: rgba(166, 227, 161, 0.1);
+    border: 1px solid var(--secondary-color);
+    color: var(--secondary-color);
+}
+
+.feedback.error {
+    background-color: rgba(243, 139, 168, 0.1);
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+}
+
+.btn.primary {
+    width: 100%;
+    box-sizing: border-box;
+    cursor: pointer;
+    font-size: 16px;
+    display: block;
+}
+
+/* Стили для формы настроек */
+label {
+    display: block;
+    text-align: left;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #a6adc8;
+}
+
+select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 2px solid #45475a;
+    background-color: #11111b;
+    color: white;
+    border-radius: 6px;
+    font-size: 16px;
+    box-sizing: border-box;
+    outline: none;
+    cursor: pointer;
+}
+
+select:focus {
+    border-color: var(--primary-color);
+}

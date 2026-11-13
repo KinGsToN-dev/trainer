@@ -1,0 +1,272 @@
+[
+  {
+    "id": "py_001",
+    "module": "programming",
+    "topic": "syntax",
+    "type": "qa",
+    "prompt": "Какая функция используется для вывода текста?",
+    "answer_spec": "print",
+    "difficulty": 1,
+    "tags": []
+  },
+  {
+    "id": "py_002",
+    "module": "programming",
+    "topic": "data_structures",
+    "type": "qa",
+    "prompt": "Какой тип данных неизменяемый: list или tuple?",
+    "answer_spec": "tuple",
+    "difficulty": 1,
+    "tags": []
+  },
+  {
+    "id": "py_003",
+    "module": "programming",
+    "topic": "syntax",
+    "type": "qa",
+    "prompt": "Какой оператор используется для целочисленного деления?",
+    "answer_spec": "//",
+    "difficulty": 1,
+    "tags": []
+  },
+  {
+    "id": "py_004",
+    "module": "programming",
+    "topic": "syntax",
+    "type": "qa",
+    "prompt": "Какой оператор используется для возведения в степень?",
+    "answer_spec": "**",
+    "difficulty": 1,
+    "tags": []
+  },
+  {
+    "id": "py_005",
+    "module": "programming",
+    "topic": "data_structures",
+    "type": "qa",
+    "prompt": "Какая структура данных хранит пары ключ-значение?",
+    "answer_spec": "dict",
+    "difficulty": 1,
+    "tags": []
+  },
+  {
+    "id": "py_006",
+    "module": "programming",
+    "topic": "data_structures",
+    "type": "qa",
+    "prompt": "Какой метод добавляет элемент в конец списка?",
+    "answer_spec": "append",
+    "difficulty": 1,
+    "tags": []
+  },
+  {
+    "id": "py_007",
+    "module": "programming",
+    "topic": "algorithms",
+    "type": "qa",
+    "prompt": "Какая сложность у бинарного поиска в отсортированном массиве? (O(n), O(log n), O(1))",
+    "answer_spec": "O(log n)",
+    "difficulty": 2,
+    "tags": []
+  },
+  {
+    "id": "py_008",
+    "module": "programming",
+    "topic": "syntax",
+    "type": "qa",
+    "prompt": "Какое ключевое слово создает анонимную функцию?",
+    "answer_spec": "lambda",
+    "difficulty": 2,
+    "tags": []
+  },
+  {
+    "id": "py_009",
+    "module": "programming",
+    "topic": "syntax",
+    "type": "qa",
+    "prompt": "Какой оператор используется для проверки, что элемент есть в списке (in / is / ==)?",
+    "answer_spec": "in",
+    "difficulty": 1,
+    "tags": []
+  },
+  {
+    "id": "py_010",
+    "module": "programming",
+    "topic": "data_structures",
+    "type": "qa",
+    "prompt": "Какой метод удаляет последний элемент списка и возвращает его?",
+    "answer_spec": "pop",
+    "difficulty": 2,
+    "tags": []
+  },
+  {
+    "id": "py_011",
+    "module": "programming",
+    "topic": "algorithms",
+    "type": "qa",
+    "prompt": "Как называется алгоритм сортировки, который рекурсивно делит массив пополам? (Quick / Merge / Bubble)",
+    "answer_spec": "merge",
+    "difficulty": 3,
+    "tags": []
+  },
+  {
+    "id": "py_012",
+    "module": "programming",
+    "topic": "oop",
+    "type": "qa",
+    "prompt": "Какой метод вызывается при создании нового объекта класса?",
+    "answer_spec": "__init__",
+    "difficulty": 2,
+    "tags": []
+  },
+  {
+    "id": "py_013",
+    "module": "programming",
+    "topic": "syntax",
+    "type": "qa",
+    "prompt": "Какая функция возвращает длину объекта?",
+    "answer_spec": "len",
+    "difficulty": 1,
+    "tags": []
+  },
+  {
+    "id": "py_014",
+    "module": "programming",
+    "topic": "data_structures",
+    "type": "qa",
+    "prompt": "Какой тип данных используется для создания множеств (уникальных элементов)?",
+    "answer_spec": "set",
+    "difficulty": 2,
+    "tags": []
+  },
+  {
+    "id": "py_015",
+    "module": "programming",
+    "topic": "oop",
+    "type": "qa",
+    "prompt": "Какой функцией проверяют, является ли объект экземпляром класса?",
+    "answer_spec": "isinstance",
+    "difficulty": 3,
+    "tags": []
+  },
+  {
+    "id": "py_016",
+    "module": "programming",
+    "topic": "algorithms",
+    "type": "qa",
+    "prompt": "Какая сложность доступа к элементу словаря (dict) в среднем? (O(n), O(1), O(log n))",
+    "answer_spec": "O(1)",
+    "difficulty": 2,
+    "tags": []
+  },
+  {
+    "id": "py_017",
+    "module": "programming",
+    "topic": "syntax",
+    "type": "qa",
+    "prompt": "Какой символ используется для однострочного комментария?",
+    "answer_spec": "#",
+    "difficulty": 1,
+    "tags": []
+  },
+  {
+    "id": "py_018",
+    "module": "programming",
+    "topic": "syntax",
+    "type": "qa",
+    "prompt": "Как называется конструкция if-elif-else для ветвления?",
+    "answer_spec": "условный оператор",
+    "difficulty": 1,
+    "tags": []
+  },
+  {
+    "id": "py_019",
+    "module": "programming",
+    "topic": "data_structures",
+    "type": "qa",
+    "prompt": "Как срезать первые три элемента списка a? (a[0:3] / a[:3] / a[1:3])",
+    "answer_spec": "a[:3]",
+    "difficulty": 2,
+    "tags": []
+  },
+  {
+    "id": "py_020",
+    "module": "programming",
+    "topic": "oop",
+    "type": "qa",
+    "prompt": "Как называется функция внутри класса?",
+    "answer_spec": "метод",
+    "difficulty": 1,
+    "tags": []
+  },
+  {
+    "id": "py_021",
+    "module": "programming",
+    "topic": "syntax",
+    "type": "qa",
+    "prompt": "Что делает функция strip()?",
+    "answer_spec": "режет",
+    "difficulty": 1,
+    "tags": []
+  },
+  {
+    "id": "py_022",
+    "module": "programming",
+    "topic": "sql",
+    "type": "qa",
+    "prompt": "Какой ключевое слово используется для выбора данных?",
+    "answer_spec": "SELECT",
+    "difficulty": 1,
+    "tags": [
+      "ai-generated"
+    ]
+  },
+  {
+    "id": "py_023",
+    "module": "programming",
+    "topic": "sql",
+    "type": "qa",
+    "prompt": "Какой оператор сортирует результаты запроса?",
+    "answer_spec": "ORDER BY",
+    "difficulty": 1,
+    "tags": [
+      "ai-generated"
+    ]
+  },
+  {
+    "id": "py_024",
+    "module": "programming",
+    "topic": "sql",
+    "type": "qa",
+    "prompt": "Какой оператор используется для фильтрации строк?",
+    "answer_spec": "WHERE",
+    "difficulty": 1,
+    "tags": [
+      "ai-generated"
+    ]
+  },
+  {
+    "id": "py_025",
+    "module": "programming",
+    "topic": "sql",
+    "type": "qa",
+    "prompt": "Как называется команда создания новой таблицы?",
+    "answer_spec": "CREATE TABLE",
+    "difficulty": 1,
+    "tags": [
+      "ai-generated"
+    ]
+  },
+  {
+    "id": "py_026",
+    "module": "programming",
+    "topic": "sql",
+    "type": "qa",
+    "prompt": "Какой оператор удаляет записи из таблицы?",
+    "answer_spec": "DELETE",
+    "difficulty": 1,
+    "tags": [
+      "ai-generated"
+    ]
+  }
+]

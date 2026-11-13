@@ -1,0 +1,163 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>ИИ-Генератор Задач</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .container { width: 700px; }
+        .form-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
+        .form-group { flex: 1 1 calc(50% - 15px); text-align: left; display: flex; flex-direction: column; }
+        .form-group label { margin-bottom: 5px; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; background-color: #11111b; border: 2px solid #45475a; color: white; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary-color); outline: none; }
+        .custom-input { margin-top: 10px; display: none; border-color: var(--secondary-color) !important; }
+        .btn { background-color: var(--primary-color); color: black; padding: 12px; width: 100%; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .spinner { display: none; width: 30px; height: 30px; border: 4px solid rgba(255,255,255,0.1); border-left-color: var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .preview-box { display: none; text-align: left; margin-top: 20px; padding: 20px; background-color: #181825; border: 1px solid var(--secondary-color); border-radius: 8px; max-height: 400px; overflow-y: auto; }
+        .preview-card { border-bottom: 1px solid #313244; padding-bottom: 15px; margin-bottom: 15px; }
+        .preview-card h3 { color: var(--secondary-color); margin-top: 0; }
+        .btn-save { background-color: var(--secondary-color); color: black; margin-top: 15px; }
+        .model-badge { font-size: 11px; color: #a6adc8; text-align: right; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 ИИ-Генератор</h1>
+        <p class="subtitle">Создай пачку новых задач с помощью нейросети</p>
+        <div id="form-area">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Язык / Категория</label>
+                    <select id="lang-select" onchange="updateTopics()">
+                        {% for l in lang_topics.keys() %}<option value="{{ l }}">{{ l }}</option>{% endfor %}
+                        <option value="__custom__" style="color: var(--secondary-color); font-weight: bold;">+ Добавить свой...</option>
+                    </select>
+                    <input type="text" id="lang-custom" class="custom-input" placeholder="Введи свой язык...">
+                </div>
+                <div class="form-group">
+                    <label>Тема</label>
+                    <select id="topic-select" onchange="toggleCustom('topic')"></select>
+                    <input type="text" id="topic-custom" class="custom-input" placeholder="Введи свою тему...">
+                </div>
+                <div class="form-group">
+                    <label>Сложность</label>
+                    <select id="difficulty"><option value="1">1 - Легкая</option><option value="2">2 - Средняя</option><option value="3">3 - Сложная</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Количество задач</label>
+                    <input type="number" id="count" value="3" min="1" max="10">
+                </div>
+            </div>
+            <button class="btn" id="generate-btn" onclick="generate()">Сгенерировать</button>
+            <a href="/code_runner" class="btn secondary" style="display: block; text-align: center; text-decoration: none; margin-top: 10px; border: 2px solid var(--primary-color); background: transparent; color: var(--primary-color);">Назад в Песочницу</a>
+        </div>
+        <div class="spinner" id="spinner"></div>
+        <div class="preview-box" id="preview-box">
+            <div id="preview-list"></div>
+            <div class="model-badge" id="generator-model"></div>
+            <button class="btn btn-save" id="save-btn" onclick="saveTasks()">Добавить все в Базу</button>
+        </div>
+    </div>
+    <script>
+        const langTopics = {{ lang_topics|tojson|safe }};
+        let generatedChallenges = [];
+        function toggleCustom(type) {
+            const selectEl = document.getElementById(`${type}-select`);
+            const customInput = document.getElementById(`${type}-custom`);
+            if (selectEl.value === '__custom__') { customInput.style.display = 'block'; customInput.focus(); } else { customInput.style.display = 'none'; }
+        }
+        function updateTopics() {
+            const langSelect = document.getElementById('lang-select');
+            const topicSelect = document.getElementById('topic-select');
+            const selectedLang = langSelect.value;
+            topicSelect.innerHTML = '';
+            if (selectedLang === '__custom__') {
+                document.getElementById('lang-custom').style.display = 'block';
+                document.getElementById('topic-select').style.display = 'none';
+                document.getElementById('topic-custom').style.display = 'block';
+            } else {
+                document.getElementById('lang-custom').style.display = 'none';
+                document.getElementById('topic-select').style.display = 'block';
+                document.getElementById('topic-custom').style.display = 'none';
+                document.getElementById('topic-custom').value = '';
+                const topics = langTopics[selectedLang] || [];
+                topics.forEach(t => {
+                    const opt = document.createElement('option'); opt.value = t; opt.textContent = t; topicSelect.appendChild(opt);
+                });
+                const customOpt = document.createElement('option'); customOpt.value = '__custom__'; customOpt.textContent = '+ Добавить свою...'; customOpt.style.color = 'var(--secondary-color)'; customOpt.style.fontWeight = 'bold'; topicSelect.appendChild(customOpt);
+            }
+        }
+        async function generate() {
+            const langSelect = document.getElementById('lang-select').value;
+            const langCustom = document.getElementById('lang-custom').value.trim();
+            const topicSelect = document.getElementById('topic-select').value;
+            const topicCustom = document.getElementById('topic-custom').value.trim();
+            let finalLang = langSelect === '__custom__' ? langCustom : langSelect;
+            let finalTopic = topicSelect;
+            if (langSelect === '__custom__' || topicSelect === '__custom__') { finalTopic = topicCustom; }
+            if (!finalLang || !finalTopic) { alert("Пожалуйста, заполни язык и тему!"); return; }
+            const diff = document.getElementById('difficulty').value;
+            const count = document.getElementById('count').value;
+            document.getElementById('form-area').style.display = 'none';
+            document.getElementById('spinner').style.display = 'block';
+            
+            try {
+                const response = await fetch('/api/generate_preview', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({lang: finalLang, topic: finalTopic, difficulty: diff, count: count})
+                });
+                
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(`Сервер ответил кодом ${response.status}`);
+                }
+                
+                const data = await response.json();
+                document.getElementById('spinner').style.display = 'none';
+                
+                if (data.success) {
+                    generatedChallenges = data.challenges;
+                    let html = '';
+                    generatedChallenges.forEach((c, i) => {
+                        html += `<div class="preview-card"><h3>${i+1}. ${c.title}</h3><p>${c.description}</p></div>`;
+                    });
+                    document.getElementById('preview-list').innerHTML = html;
+                    document.getElementById('generator-model').textContent = `Модель: ${data.model}`;
+                    document.getElementById('preview-box').style.display = 'block';
+                } else { 
+                    alert(data.message); 
+                    document.getElementById('form-area').style.display = 'block'; 
+                }
+            } catch (e) { 
+                document.getElementById('spinner').style.display = 'none'; 
+                document.getElementById('form-area').style.display = 'block'; 
+                alert("Ошибка при генерации:\n" + e.message); 
+            }
+        }
+        async function saveTasks() {
+            if (generatedChallenges.length === 0) return;
+            const btn = document.getElementById('save-btn'); 
+            btn.textContent = 'Сохранение...'; 
+            btn.disabled = true;
+            
+            // Передаем выбранную сложность при сохранении
+            const selectedDifficulty = document.getElementById('difficulty').value;
+            
+            const response = await fetch('/api/save_generated', {
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({
+                    challenges: generatedChallenges, 
+                    difficulty: selectedDifficulty
+                })
+            });
+            const data = await response.json();
+            if (data.success) { window.location.href = '/code_runner'; } 
+            else { alert("Ошибка сохранения."); btn.textContent = 'Добавить все в Базу'; btn.disabled = false; }
+        }
+        document.addEventListener("DOMContentLoaded", () => { updateTopics(); });
+    </script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Платформа Задач</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/php/php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/sql/sql.min.js"></script>
+    
+    <style>
+        .layout { display: flex; gap: 20px; width: 1100px; height: 700px; }
+        .sidebar { width: 300px; background-color: var(--card-bg); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        .challenge-item { padding: 12px; background-color: #181825; border-radius: 8px; margin-bottom: 10px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .challenge-item:hover { border-color: #45475a; }
+        .challenge-item.active { border-color: var(--secondary-color); background-color: rgba(166, 227, 161, 0.05); }
+        .challenge-title { font-weight: bold; color: var(--text-color); margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;}
+        .diff-badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .diff-1 { background-color: rgba(166, 227, 161, 0.2); color: var(--secondary-color); }
+        .diff-2 { background-color: rgba(249, 226, 175, 0.2); color: #f9e2af; }
+        .diff-3 { background-color: rgba(243, 139, 168, 0.2); color: var(--accent-color); }
+        
+        .main-pane { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        .task-info { background-color: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); display: none; }
+        .task-info.active { display: block; }
+        .task-info h3 { margin-top: 0; color: var(--secondary-color); }
+        
+        .btn-row { display: flex; gap: 10px; margin-top: 10px; }
+        .hint-btn { background: none; border: 1px solid #f9e2af; color: #f9e2af; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .schema-btn { background: none; border: 1px solid var(--primary-color); color: var(--primary-color); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .hint-text, .schema-text { display: none; margin-top: 10px; padding: 10px; font-size: 14px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; }
+        .hint-text { background-color: rgba(249, 226, 175, 0.1); border-left: 3px solid #f9e2af; color: #f9e2af; }
+        .schema-text { background-color: rgba(137, 180, 250, 0.1); border-left: 3px solid var(--primary-color); color: var(--primary-color); }
+        
+        .editor-pane { flex: 1; display: flex; flex-direction: column; background-color: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        .pane-header { padding: 10px 15px; background-color: #181825; border-bottom: 2px solid #313244; display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #a6adc8; font-weight: bold; }
+        
+        .CodeMirror { flex: 1; height: auto !important; font-family: 'Consolas', monospace; font-size: 15px; }
+        
+        .console { height: 160px; background-color: #11111b; padding: 15px; font-family: 'Consolas', monospace; font-size: 15px; color: #a6e3a1; overflow-y: auto; white-space: pre-wrap; border-top: 2px solid #313244; position: relative; }
+        .console.error { color: #f38ba8; }
+        .console.review { color: #89b4fa; }
+        
+        .btn-group { display: flex; gap: 10px; align-items: center;}
+        .btn-run { background-color: var(--primary-color); color: black; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-check { background-color: var(--secondary-color); color: black; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-review { background-color: #cba6f7; color: black; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-run:hover, .btn-check:hover, .btn-review:hover { opacity: 0.8; }
+        
+        .timer-box { font-size: 18px; font-weight: bold; color: var(--text-color); margin-left: 15px; font-family: monospace; }
+        .timer-box.danger { color: var(--accent-color); animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        .filter-box { display: flex; gap: 5px; margin-bottom: 15px; flex-direction: column; }
+        .filter-select { width: 100%; padding: 8px; background-color: #11111b; border: 1px solid #45475a; color: white; border-radius: 4px; font-size: 13px; }
+        .btn-ai-link { display: block; text-align: center; padding: 10px; background-color: rgba(137, 180, 250, 0.1); border: 1px dashed var(--primary-color); color: var(--primary-color); border-radius: 6px; text-decoration: none; margin-bottom: 15px; font-weight: bold; }
+        .btn-ai-link:hover { background-color: rgba(137, 180, 250, 0.2); }
+        
+        .model-badge { position: absolute; top: 5px; right: 10px; font-size: 10px; color: #585b70; background: #181825; padding: 2px 6px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <div class="sidebar">
+            <div style="background-color: #11111b; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid #313244;">
+                <div style="font-size: 24px; margin-bottom: 5px;">{{ rank }}</div>
+                <div style="font-size: 12px; color: #a6adc8;">Опыт: {{ xp }} XP</div>
+            </div>
+
+            <a href="/ai_generator" class="btn-ai-link">🤖 Создать задачу через ИИ</a>
+            <a href="/" class="btn secondary" style="margin-bottom: 15px; text-align: center;">На главную</a>
+            
+            <div class="filter-box">
+                <select class="filter-select" id="filter-lang" onchange="updateTopics()">
+                    <option value="all">Все Языки</option>
+                    {% for l in lang_topics.keys() %}<option value="{{ l }}">{{ l }}</option>{% endfor %}
+                </select>
+                <select class="filter-select" id="filter-topic" onchange="filterTasks()">
+                    <option value="all">Все Темы</option>
+                </select>
+                <select class="filter-select" id="filter-diff" onchange="filterTasks()">
+                    <option value="all">Любая Сложность</option>
+                    {% for d in diffs %}<option value="{{ d }}">Сл. {{ d }}</option>{% endfor %}
+                </select>
+            </div>
+
+            <div id="challenge-list">
+                {% for c in challenges %}
+                    <div class="challenge-item" id="nav-{{ c.id }}" 
+                         data-lang="{{ c.get('lang', 'Python') }}" 
+                         data-topic="{{ c.get('topic', 'general') }}" 
+                         data-diff="{{ c.get('difficulty', 1) }}" 
+                         onclick="loadChallenge('{{ c.id }}')">
+                        <div class="challenge-title">
+                            {{ c.title }}
+                            <span class="diff-badge diff-{{ c.difficulty }}">Сл. {{ c.difficulty }}</span>
+                        </div>
+                        <div style="font-size: 12px; color: #a6adc8; margin-top: 5px;">+{{ c.xp }} XP | {{ c.get('lang', 'Python') }} > {{ c.get('topic', 'general') }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="main-pane">
+            {% for c in challenges %}
+            <div class="task-info" id="info-{{ c.id }}">
+                <h3>{{ c.title }} <span style="font-size: 12px; color: #a6adc8; font-weight: normal;">[{{ c.get('lang', 'Python') }} > {{ c.get('topic', 'general') }}]</span></h3>
+                <p class="task-desc">{{ c.description }}</p>
+                
+                <div class="btn-row">
+                    <button class="hint-btn" onclick="toggleHint('{{ c.id }}')">💡 Показать подсказку</button>
+                    {% if c.lang == 'SQL' and c.setup_sql %}
+                        <button class="schema-btn" onclick="toggleSchema('{{ c.id }}')">🗄️ Показать таблицы БД</button>
+                    {% endif %}
+                </div>
+                <div class="hint-text" id="hint-{{ c.id }}">{{ c.hint }}</div>
+                {% if c.lang == 'SQL' and c.setup_sql %}
+                    <div class="schema-text" id="schema-{{ c.id }}">{{ c.setup_sql }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="editor-pane">
+                <div class="pane-header">
+                    <span id="editor-title">main.py</span>
+                    <div class="btn-group">
+                        <div class="timer-box" id="timer">05:00</div>
+                        <button class="btn-run" onclick="runCode()">Запустить</button>
+                        <button class="btn-check" onclick="checkCode()">Сдать решение</button>
+                        <button class="btn-review" onclick="reviewCode()">Спросить ИИ</button>
+                    </div>
+                </div>
+                <textarea id="code-input"></textarea>
+                <div class="console" id="console-output">
+                    <div class="model-badge" id="model-badge" style="display:none;"></div>
+                    Выбери задачу слева.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const challengesData = {{ challenges|tojson|safe }};
+        const langTopics = {{ lang_topics|tojson|safe }};
+        let currentChallengeId = null;
+        let currentLang = 'Python';
+        let timerInterval = null;
+        let timeLeft = 300;
+        
+        const langExtensions = { 
+            'Python': { ext: '.py', title: 'main.py' }, 
+            'JS': { ext: '.js', title: 'main.js' }, 
+            'PHP': { ext: '.php', title: 'main.php' },
+            'SQL': { ext: '.sql', title: 'query.sql' } 
+        };
+        const codeMirrorModes = { 'Python': 'python', 'JS': 'javascript', 'PHP': 'php', 'SQL': 'sql' };
+
+        const editor = CodeMirror.fromTextArea(document.getElementById("code-input"), {
+            lineNumbers: true, theme: "dracula", indentUnit: 4, lineWrapping: true
+        });
+
+        function startTimer() {
+            clearInterval(timerInterval); timeLeft = 300;
+            const timerEl = document.getElementById('timer'); timerEl.className = 'timer-box';
+            timerInterval = setInterval(() => {
+                timeLeft--; timerEl.textContent = `${String(Math.floor(timeLeft / 60)).padStart(2, '0')}:${String(timeLeft % 60).padStart(2, '0')}`;
+                if (timeLeft <= 60) timerEl.classList.add('danger');
+                if (timeLeft <= 0) { clearInterval(timerInterval); timerEl.textContent = "Время вышло!"; }
+            }, 1000);
+        }
+
+        function updateTopics() {
+            const lang = document.getElementById('filter-lang').value;
+            const topicSelect = document.getElementById('filter-topic');
+            topicSelect.innerHTML = '<option value="all">Все Темы</option>';
+            let topicsToAdd = [];
+            if (lang === 'all') {
+                Object.values(langTopics).forEach(arr => topicsToAdd.push(...arr));
+                topicsToAdd = [...new Set(topicsToAdd)].sort();
+            } else { topicsToAdd = langTopics[lang] || []; }
+            topicsToAdd.forEach(t => {
+                const opt = document.createElement('option'); opt.value = t; opt.textContent = t; topicSelect.appendChild(opt);
+            });
+            filterTasks();
+        }
+
+        function filterTasks() {
+            const lang = document.getElementById('filter-lang').value;
+            const topic = document.getElementById('filter-topic').value;
+            const diff = document.getElementById('filter-diff').value;
+            document.querySelectorAll('.challenge-item').forEach(item => {
+                const matchLang = (lang === 'all' || item.getAttribute('data-lang') === lang);
+                const matchTopic = (topic === 'all' || item.getAttribute('data-topic') === topic);
+                const matchDiff = (diff === 'all' || item.getAttribute('data-diff') === diff);
+                item.style.display = (matchLang && matchTopic && matchDiff) ? 'block' : 'none';
+            });
+        }
+
+        function loadChallenge(id) {
+            currentChallengeId = id;
+            const challenge = challengesData.find(c => c.id === id);
+            if (!challenge) return;
+            document.querySelectorAll('.challenge-item').forEach(el => el.classList.remove('active'));
+            const navEl = document.getElementById(`nav-${id}`); if(navEl) navEl.classList.add('active');
+            document.querySelectorAll('.task-info').forEach(el => el.classList.remove('active'));
+            const infoEl = document.getElementById(`info-${id}`); if(infoEl) infoEl.classList.add('active');
+
+            currentLang = challenge.lang || 'Python';
+            const langConfig = langExtensions[currentLang] || langExtensions['Python'];
+            editor.setOption("mode", codeMirrorModes[currentLang] || 'python');
+            document.getElementById('editor-title').textContent = langConfig.title;
+            editor.setValue(challenge.starter_code || '');
+            
+            const consoleOut = document.getElementById('console-output');
+            consoleOut.className = 'console';
+            consoleOut.innerHTML = `<div class="model-badge" id="model-badge" style="display:none;"></div>Готов к работе (${currentLang}).`;
+            startTimer();
+        }
+
+        function toggleHint(id) {
+            const hintEl = document.getElementById(`hint-${id}`);
+            hintEl.style.display = hintEl.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function toggleSchema(id) {
+            const schemaEl = document.getElementById(`schema-${id}`);
+            schemaEl.style.display = schemaEl.style.display === 'block' ? 'none' : 'block';
+        }
+
+        async function runCode() {
+            const code = editor.getValue();
+            const consoleOut = document.getElementById('console-output');
+            consoleOut.className = 'console';
+            consoleOut.innerHTML = `<div class="model-badge" id="model-badge" style="display:none;"></div>Выполняется...`;
+            try {
+                const response = await fetch('/api/run_code', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({code: code, lang: currentLang})
+                });
+                const data = await response.json();
+                if (data.error) { consoleOut.className = 'console error'; consoleOut.textContent = data.error; } 
+                else { consoleOut.className = 'console'; consoleOut.textContent = data.output || 'Успешно (пустой вывод).'; }
+            } catch (e) { consoleOut.className = 'console error'; consoleOut.textContent = 'Ошибка сервера.'; }
+        }
+
+        async function checkCode() {
+            if (!currentChallengeId) return alert("Выбери задачу!");
+            const code = editor.getValue();
+            const consoleOut = document.getElementById('console-output');
+            consoleOut.className = 'console';
+            consoleOut.innerHTML = `<div class="model-badge" id="model-badge" style="display:none;"></div>Проверка тестов...`;
+            try {
+                const response = await fetch('/api/check_code', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({code: code, challenge_id: currentChallengeId})
+                });
+                const data = await response.json();
+                if (data.success) { consoleOut.className = 'console'; consoleOut.textContent = data.message; clearInterval(timerInterval); } 
+                else { consoleOut.className = 'console error'; consoleOut.textContent = data.message; }
+            } catch (e) { consoleOut.className = 'console error'; consoleOut.textContent = 'Ошибка сервера.'; }
+        }
+
+        async function reviewCode() {
+            if (!currentChallengeId) return alert("Выбери задачу!");
+            const code = editor.getValue();
+            const consoleOut = document.getElementById('console-output');
+            consoleOut.className = 'console';
+            consoleOut.innerHTML = `<div class="model-badge" id="model-badge" style="display:none;"></div>ИИ анализирует твой код... Это может занять 10-15 секунд.`;
+            try {
+                const response = await fetch('/api/review_code', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({code: code, challenge_id: currentChallengeId})
+                });
+                const data = await response.json();
+                if (data.success) {
+                    consoleOut.className = 'console review';
+                    consoleOut.innerHTML = `<div class="model-badge" id="model-badge" style="display:block;">${data.model}</div>` + data.review.replace(/\n/g, '<br>');
+                } else {
+                    consoleOut.className = 'console error';
+                    consoleOut.innerHTML = `<div class="model-badge" id="model-badge" style="display:none;"></div>` + data.message;
+                }
+            } catch (e) { consoleOut.className = 'console error'; consoleOut.textContent = 'Ошибка сервера.'; }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            updateTopics();
+            if (challengesData.length > 0) loadChallenge(challengesData[0].id);
+        });
+    </script>
+</body>
+</html>

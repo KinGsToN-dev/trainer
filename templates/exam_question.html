@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Экзамен</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container" style="border: 2px solid var(--accent-color);">
+        <div class="progress-bar" style="color: var(--accent-color);">
+            ЭКЗАМЕН: Вопрос {{ current_num }} из {{ total_num }}
+        </div>
+        
+        <h3>Тема: {{ task.topic }} | Сложность: {{ task.difficulty }}</h3>
+        <p class="question-text">{{ task.prompt }}</p>
+        
+        {% if already_answered and not feedback %}
+            <div class="feedback {{ 'success' if prev_result else 'error' }}">
+                <p>Ты уже ответил на этот вопрос. Результат: <strong>{{ 'Верно' if prev_result else 'Ошибка' }}</strong></p>
+            </div>
+            <a href="/exam_dashboard" class="btn secondary" style="margin-bottom: 10px;">Вернуться к списку</a>
+        {% elif feedback %}
+            <div class="feedback {{ 'success' if is_correct else 'error' }}">
+                <p>{{ feedback }}</p>
+                {% if not is_correct %}<p>Правильный ответ: <strong>{{ task.answer_spec }}</strong></p>{% endif %}
+            </div>
+            <a href="/exam_dashboard" class="btn primary" style="background-color: var(--accent-color); color: black;">Вернуться к списку вопросов</a>
+        {% else %}
+            <form method="POST">
+                <input type="text" name="answer" class="input-field" placeholder="Твой ответ..." autofocus autocomplete="off">
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn primary" style="background-color: var(--accent-color); color: black; flex: 2;">Ответить</button>
+                    <button type="submit" name="skip" value="true" class="btn secondary" style="flex: 1; border-color: #585b70; color: #a6adc8;">Пропустить</button>
+                </div>
+            </form>
+            <a href="/exam_dashboard" style="display: block; margin-top: 15px; color: #a6adc8; text-decoration: none; font-size: 14px;">← Вернуться к списку без ответа</a>
+        {% endif %}
+    </div>
+</body>
+</html>

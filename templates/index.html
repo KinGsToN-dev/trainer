@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Универсальный Тренажер</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .backup-panel { margin-top: 20px; padding-top: 20px; border-top: 1px solid #313244; display: flex; gap: 10px; justify-content: center; }
+        .btn-small { padding: 8px 15px; font-size: 12px; text-decoration: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .btn-export { background-color: #a6e3a1; color: black; }
+        .btn-import { background-color: #89b4fa; color: black; border: none; }
+        .import-form { display: flex; gap: 10px; align-items: center; }
+        .file-input { font-size: 12px; color: #a6adc8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Универсальный Тренажер</h1>
+        <p class="subtitle">Твой персональный инструмент для прокачки навыков</p>
+        
+        {% if request.args.get('import_success') %}
+            <div style="background: rgba(166,227,161,0.1); border: 1px solid var(--secondary-color); color: var(--secondary-color); padding: 10px; border-radius: 6px; margin-bottom: 20px;">
+                ✅ База данных и задачи успешно импортированы!
+            </div>
+        {% endif %}
+
+        <div class="stats-card" style="border-left: 4px solid var(--primary-color);">
+            <h3>Профиль:</h3>
+            <p>Ранг: <strong>{{ rank }}</strong></p>
+            <p>Опыт: <strong>{{ xp }} XP</strong></p>
+        </div>
+
+        <div class="stats-card">
+            <h3>Общая статистика:</h3>
+            <p>Всего ответов: <strong>{{ total }}</strong></p>
+            <p>Точность: <strong>{{ accuracy }}%</strong></p>
+            <p>Карточек в базе: <strong>{{ db_size }}</strong></p>
+        </div>
+
+        <div class="menu">
+            <a href="/train" class="btn primary">Начать тренировку</a>
+            <a href="/exam" class="btn secondary" style="border-color: var(--accent-color); color: var(--accent-color);">Экзамен</a>
+            <a href="/code_runner" class="btn secondary" style="border-color: var(--secondary-color); color: var(--secondary-color);">Песочница Python 💻</a>
+            <a href="/profile" class="btn secondary" style="border-color: var(--primary-color); color: var(--primary-color);">Аналитика и Медали 🏆</a>
+            <a href="/manage" class="btn secondary">Управление карточками</a>
+        </div>
+
+        <!-- Блок Бэкапа -->
+        <div class="backup-panel">
+            <a href="/export" class="btn-small btn-export">📥 Скачать бэкап (ZIP)</a>
+            <form action="/import" method="POST" enctype="multipart/form-data" class="import-form">
+                <input type="file" name="backup_file" accept=".zip" required class="file-input">
+                <button type="submit" class="btn-small btn-import">📤 Загрузить бэкап</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

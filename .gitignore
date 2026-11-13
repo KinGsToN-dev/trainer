@@ -1,0 +1,22 @@
+﻿# Секреты и окружение
+.env
+.venv/
+venv/
+
+# Базы данных (чтобы не засорять репозиторий историей твоих ответов)
+data/trainer.db
+data/*.db
+
+# Кэш Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Бэкапы
+*.zip
+
+# Системные файлы
+.DS_Store
+Thumbs.db

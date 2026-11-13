@@ -1,0 +1,149 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Экзамен (Интерактивный)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .exam-layout { display: flex; width: 900px; height: 600px; background-color: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        .sidebar { width: 300px; background-color: #181825; border-right: 2px solid #313244; padding: 20px; display: flex; flex-direction: column; }
+        .main-content { flex: 1; padding: 40px; display: flex; flex-direction: column; justify-content: center; position: relative; }
+        
+        .sidebar h2 { font-size: 18px; color: var(--accent-color); margin-top: 0; }
+        .q-list { flex: 1; overflow-y: auto; margin-bottom: 20px; }
+        .q-item { padding: 10px; margin-bottom: 5px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; font-size: 14px; border: 2px solid transparent; transition: 0.2s; }
+        .q-item:hover { background-color: #313244; }
+        .q-item.active { border-color: var(--primary-color); background-color: #313244; }
+        .q-item.correct { color: var(--secondary-color); }
+        .q-item.incorrect { color: var(--accent-color); }
+        
+        .question-area { display: none; }
+        .question-area.active { display: block; animation: fadeIn 0.3s ease; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .feedback-box { padding: 15px; border-radius: 6px; margin-bottom: 20px; display: none; }
+        .feedback-box.success { display: block; background-color: rgba(166, 227, 161, 0.1); border: 1px solid var(--secondary-color); color: var(--secondary-color); }
+        .feedback-box.error { display: block; background-color: rgba(243, 139, 168, 0.1); border: 1px solid var(--accent-color); color: var(--accent-color); }
+    </style>
+</head>
+<body>
+    <div class="exam-layout">
+        <!-- Левая колонка: список вопросов -->
+        <div class="sidebar">
+            <h2>Вопросы ({{ total }})</h2>
+            <div class="q-list" id="question-list">
+                {% for q in tasks %}
+                    <div class="q-item {{ q.status }}" data-idx="{{ q.idx }}" id="item-{{ q.idx }}">
+                        <span>{{ q.idx + 1 }}. {{ q.short_prompt }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+            <a href="/finish_exam" class="btn primary" style="background-color: var(--accent-color); color: black; text-align: center;">Завершить экзамен</a>
+            <a href="/" class="btn secondary" style="margin-top: 10px; text-align: center;">Отменить</a>
+        </div>
+
+        <!-- Правая колонка: сам вопрос -->
+        <div class="main-content">
+            {% for q in tasks %}
+                <div class="question-area" id="area-{{ q.idx }}">
+                    <div class="progress-bar">Вопрос {{ q.idx + 1 }} из {{ total }}</div>
+                    <h3>Тема: {{ q.task.topic }} | Сложность: {{ q.task.difficulty }}</h3>
+                    <p class="question-text">{{ q.task.prompt }}</p>
+                    
+                    <div class="feedback-box" id="feedback-{{ q.idx }}"></div>
+
+                    <form onsubmit="submitAnswer(event, {{ q.idx }})" id="form-{{ q.idx }}">
+                        <input type="text" name="answer" class="input-field" placeholder="Твой ответ..." autocomplete="off" id="input-{{ q.idx }}">
+                        <button type="submit" class="btn primary" style="background-color: var(--accent-color); color: black;">Ответить</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        let currentIdx = 0;
+
+        // Переключение на конкретный вопрос
+        function showQuestion(idx) {
+            document.querySelectorAll('.question-area').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.q-item').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`area-${idx}`).classList.add('active');
+            document.getElementById(`item-${idx}`).classList.add('active');
+            
+            const input = document.getElementById(`input-${idx}`);
+            if(input && !document.getElementById(`feedback-${idx}`).classList.contains('success') && !document.getElementById(`feedback-${idx}`).classList.contains('error')) {
+                input.focus();
+            }
+            currentIdx = idx;
+        }
+
+        // Обработка клика по списку слева
+        document.querySelectorAll('.q-item').forEach(item => {
+            item.addEventListener('click', () => {
+                showQuestion(parseInt(item.dataset.idx));
+            });
+        });
+
+        // Отправка ответа через AJAX
+        async function submitAnswer(event, idx) {
+            event.preventDefault();
+            const input = document.getElementById(`input-${idx}`);
+            const answer = input.value.trim();
+            if (!answer) return;
+
+            const response = await fetch('/api/check_answer', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({idx: idx, answer: answer})
+            });
+            
+            const data = await response.json();
+            
+            // Показываем фидбек
+            const feedbackBox = document.getElementById(`feedback-${idx}`);
+            feedbackBox.className = `feedback-box ${data.correct ? 'success' : 'error'}`;
+            feedbackBox.innerHTML = `<p>${data.feedback}</p>` + (!data.correct ? `<p>Правильный ответ: <strong>${data.answer_spec}</strong></p>` : '');
+            
+            // Меняем цвет кнопки в списке
+            const item = document.getElementById(`item-${idx}`);
+            item.className = `q-item ${data.correct ? 'correct' : 'incorrect'}`;
+            
+            // Скрываем форму (чтобы нельзя было ответить дважды)
+            document.getElementById(`form-${idx}`).style.display = 'none';
+
+            // Ищем следующий неотвеченный вопрос
+            let nextIdx = -1;
+            for (let i = 0; i < {{ total }}; i++) {
+                const nextItem = document.getElementById(`item-${i}`);
+                if (!nextItem.classList.contains('correct') && !nextItem.classList.contains('incorrect')) {
+                    nextIdx = i;
+                    break;
+                }
+            }
+
+            // Автопереход через 1.5 секунды
+            setTimeout(() => {
+                if (nextIdx !== -1) {
+                    showQuestion(nextIdx);
+                } else {
+                    alert("Ты ответил на все вопросы! Нажми 'Завершить экзамен'.");
+                }
+            }, 1500);
+        }
+
+        // При загрузке открываем первый неотвеченный вопрос
+        document.addEventListener("DOMContentLoaded", () => {
+            for (let i = 0; i < {{ total }}; i++) {
+                const item = document.getElementById(`item-${i}`);
+                if (!item.classList.contains('correct') && !item.classList.contains('incorrect')) {
+                    showQuestion(i);
+                    break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

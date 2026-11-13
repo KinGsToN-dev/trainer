@@ -1,0 +1,19 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Итоги тренировки</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Сессия завершена!</h1>
+        <div class="stats-card" style="text-align: center; margin-top: 20px;">
+            <h3>Твой результат:</h3>
+            <p style="font-size: 24px;"><strong>{{ score }} из {{ total }}</strong></p>
+        </div>
+        <p class="subtitle">Планировщик SM-2 обновил интервалы. Эти вопросы вернутся к тебе, когда придет время.</p>
+        <a href="/" class="btn primary">Вернуться на главную</a>
+    </div>
+</body>
+</html>

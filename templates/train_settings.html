@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Настройки тренировки</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Настройки</h1>
+        <p class="subtitle">Выбери, что будешь тренировать сегодня</p>
+        
+        <form action="/start_training" method="POST">
+            <label for="module">Предмет (Язык):</label>
+            <select name="module" id="module" onchange="updateFilters()">
+                <option value="all">Все предметы</option>
+                {% for subj in subject_data.keys() %}
+                    <option value="{{ subj }}">{{ subj }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="topic">Тема:</label>
+            <select name="topic" id="topic">
+                <option value="all">Все темы</option>
+            </select>
+
+            <label for="difficulty">Сложность:</label>
+            <select name="difficulty" id="difficulty">
+                <option value="all">Любая</option>
+            </select>
+
+            <button type="submit" class="btn primary">Поехали!</button>
+        </form>
+        
+        <a href="/" class="btn secondary" style="margin-top: 15px;">Назад</a>
+    </div>
+
+    <script>
+        const subjectData = {{ subject_data|tojson|safe }};
+
+        function updateFilters() {
+            const subject = document.getElementById('module').value;
+            const topicSelect = document.getElementById('topic');
+            const diffSelect = document.getElementById('difficulty');
+            
+            topicSelect.innerHTML = '<option value="all">Все темы</option>';
+            diffSelect.innerHTML = '<option value="all">Любая</option>';
+
+            let topicsToAdd = new Set();
+            let diffsToAdd = new Set();
+
+            if (subject === 'all') {
+                Object.values(subjectData).forEach(data => {
+                    data.topics.forEach(t => topicsToAdd.add(t));
+                    data.diffs.forEach(d => diffsToAdd.add(d));
+                });
+            } else {
+                const data = subjectData[subject];
+                if (data) {
+                    data.topics.forEach(t => topicsToAdd.add(t));
+                    data.diffs.forEach(d => diffsToAdd.add(d));
+                }
+            }
+
+            Array.from(topicsToAdd).sort().forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t; opt.textContent = t; topicSelect.appendChild(opt);
+            });
+
+            Array.from(diffsToAdd).sort((a,b) => a-b).forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d;
+                // ИСПРАВЛЕНИЕ: Расшифровка сложности
+                if (d == 1) opt.textContent = "1 - Легкая";
+                else if (d == 2) opt.textContent = "2 - Средняя";
+                else if (d == 3) opt.textContent = "3 - Сложная";
+                else opt.textContent = d;
+                diffSelect.appendChild(opt);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => { updateFilters(); });
+    </script>
+</body>
+</html>

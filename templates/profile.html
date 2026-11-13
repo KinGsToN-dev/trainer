@@ -1,0 +1,130 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Профиль Аналитика</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* ИСПРАВЛЕНИЕ ВЕРСТКИ: убираем жесткое центрирование по вертикали */
+        body { 
+            display: block; 
+            padding: 40px 20px; 
+            height: auto; 
+            min-height: 100vh; 
+            box-sizing: border-box;
+        }
+        
+        .profile-container { margin: 0 auto; width: 800px; background-color: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .streak-box { background-color: #181825; border: 2px solid var(--accent-color); padding: 15px 25px; border-radius: 12px; text-align: center; }
+        .streak-box h2 { margin: 0; font-size: 32px; color: var(--accent-color); }
+        .streak-box p { margin: 5px 0 0 0; font-size: 14px; color: #a6adc8; }
+        
+        .section-title { font-size: 18px; color: var(--primary-color); border-bottom: 2px solid #313244; padding-bottom: 10px; margin-top: 30px; }
+        
+        .heatmap { display: grid; grid-template-columns: repeat(14, 1fr); gap: 4px; margin-top: 15px; }
+        .heatmap-day { width: 100%; aspect-ratio: 1; background-color: #313244; border-radius: 2px; }
+        .heatmap-day[data-count="1"] { background-color: #a6e3a1; }
+        .heatmap-day[data-count="2"] { background-color: #40a02b; }
+        .heatmap-day[data-count="3"] { background-color: #179299; }
+        .heatmap-day[data-count="4+"] { background-color: #1e66f5; }
+        
+        .lang-bar-container { margin-bottom: 15px; }
+        .lang-bar-header { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; }
+        .lang-bar-bg { background-color: #313244; height: 12px; border-radius: 6px; overflow: hidden; }
+        .lang-bar-fill { height: 100%; background-color: var(--secondary-color); border-radius: 6px; transition: width 0.5s; }
+
+        .medals-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
+        .medal-card { background-color: #181825; border: 1px solid #45475a; padding: 15px; border-radius: 8px; text-align: center; width: 120px; }
+        .medal-icon { font-size: 32px; margin-bottom: 10px; }
+        .medal-title { font-size: 13px; font-weight: bold; color: var(--text-color); }
+        .medal-lang { font-size: 11px; color: #a6adc8; margin-top: 5px; }
+
+        /* Danger Zone */
+        .danger-zone { margin-top: 40px; border: 1px solid var(--accent-color); border-radius: 8px; padding: 20px; background: rgba(243, 139, 168, 0.05); }
+        .danger-zone h3 { color: var(--accent-color); margin-top: 0; font-size: 16px; }
+        .danger-zone p { font-size: 13px; color: #a6adc8; margin-bottom: 15px; }
+        .btn-danger { background-color: var(--accent-color); color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-danger:hover { opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <div class="header-row">
+            <div>
+                <h1 style="margin: 0;">Профиль</h1>
+                <p style="color: #a6adc8; margin: 5px 0 0 0;">{{ rank }} | {{ xp }} XP</p>
+            </div>
+            <div class="streak-box">
+                <h2>🔥 {{ streak }}</h2>
+                <p>Дней подряд</p>
+            </div>
+        </div>
+
+        <!-- Медали -->
+        <h3 class="section-title">🏆 Твои достижения</h3>
+        <div class="medals-grid">
+            {% if achievements %}
+                {% for ach in achievements %}
+                    <div class="medal-card" style="border-color: {% if ach.level == 'Gold' %}#f9e2af{% elif ach.level == 'Silver' %}#cdd6f4{% elif ach.level == 'Bronze' %}#fab387{% else %}var(--primary-color){% endif %};">
+                        <div class="medal-icon">{{ ach.icon }}</div>
+                        <div class="medal-title">{{ ach.title }}</div>
+                        <div class="medal-lang">{{ ach.lang }}</div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="subtitle" style="margin: 0;">Пока нет медалей. Реши свою первую задачу, чтобы получить Бронзу!</p>
+            {% endif %}
+        </div>
+
+        <!-- Карта активности -->
+        <h3 class="section-title">Активность (последние 4 недели)</h3>
+        <div class="heatmap">
+            {% for day in heatmap %}
+                {% set count_class = '4+' if day.count >= 4 else day.count %}
+                <div class="heatmap-day" data-count="{{ count_class }}" title="{{ day.date }}: {{ day.count }} ответов"></div>
+            {% endfor %}
+        </div>
+
+        <!-- Разбивка по языкам -->
+        <h3 class="section-title">Прогресс по языкам / категориям</h3>
+        {% for lang, data in lang_stats.items() %}
+        <div class="lang-bar-container">
+            <div class="lang-bar-header">
+                <span><strong>{{ lang }}</strong></span>
+                <span>{{ data.solved }} из {{ data.total }} решено ({{ data.percent }}%)</span>
+            </div>
+            <div class="lang-bar-bg">
+                <div class="lang-bar-fill" style="width: {{ data.percent }}%;"></div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Danger Zone -->
+        <div class="danger-zone">
+            <h3>⚠️ Опасная зона</h3>
+            <p>Это действие навсегда удалит всю историю твоих ответов, сбросит опыт (XP), стрики и достижения. Задачи останутся на месте.</p>
+            <button class="btn-danger" onclick="resetProgress()">Сбросить весь прогресс</button>
+        </div>
+
+        <div style="margin-top: 30px; display: flex; gap: 10px;">
+            <a href="/" class="btn primary" style="flex: 1; text-align: center;">На главную</a>
+            <a href="/code_runner" class="btn secondary" style="flex: 1; text-align: center;">К задачам</a>
+        </div>
+    </div>
+
+    <script>
+        async function resetProgress() {
+            if (!confirm("Ты уверен? Весь опыт, история и достижения будут удалены навсегда. Это нельзя отменить.")) return;
+            
+            const response = await fetch('/api/reset_progress', { method: 'POST' });
+            if (response.ok) {
+                alert("Прогресс успешно сброшен!");
+                location.reload();
+            } else {
+                alert("Ошибка при сбросе.");
+            }
+        }
+    </script>
+</body>
+</html>
