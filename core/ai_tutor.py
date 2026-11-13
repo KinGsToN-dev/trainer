@@ -71,3 +71,32 @@ def generate_ai_code_challenges_batch(lang: str, topic: str, difficulty: int, co
         return {"challenges": challenges, "model": response.model if hasattr(response, 'model') else "openrouter/auto"}
     except Exception as e:
         return {"error": str(e)}
+
+def generate_qa_cards_batch(subject: str, topic: str, difficulty: int, count: int) -> dict:
+    """Генерирует простые карточки Вопрос-Ответ для тренировок."""
+    if not api_key: return {"error": "API ключ не найден."}
+    
+    system_prompt = (
+        "Ты — эксперт по созданию обучающих карточек. Верни ТОЛЬКО валидный JSON-массив без markdown. "
+        "Формат каждого элемента: {"
+        '"topic": "короткая тема", '
+        '"prompt": "вопрос", '
+        '"answer_spec": "очень короткий ответ (1-3 слова)", '
+        f'"difficulty": {difficulty}'
+        "}. "
+        f"Сгенерируй вопросы для предмета '{subject}' по теме '{topic}'. "
+        "Ответы должны быть однозначными и простыми для проверки."
+    )
+    user_prompt = f"Сгенерируй ровно {count} карточек. Тема: {topic}."
+    
+    try:
+        response = client.chat.completions.create(
+            model=MODEL, messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}], temperature=0.7
+        )
+        content = response.choices[0].message.content.replace("```json", "").replace("```", "").strip()
+        start = content.find('['); end = content.rfind(']') + 1
+        if start == -1 or end == 0: return {"error": "ИИ вернул ответ без JSON."}
+        cards = json.loads(content[start:end])
+        return {"cards": cards, "model": response.model if hasattr(response, 'model') else "openrouter/auto"}
+    except Exception as e:
+        return {"error": str(e)}

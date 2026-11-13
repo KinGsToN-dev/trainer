@@ -2,14 +2,13 @@
 from core.db import get_connection, get_review_state, save_review_state, save_attempt, add_player_xp
 from core.scheduler import update_review_state
 from core.models import Attempt
-from services.task_manager import get_all_trainable_tasks, load_code_challenges, modules, execute_code_check
+from services.task_manager import get_all_trainable_tasks, load_code_challenges, execute_code_check, check_qa_answer
 from datetime import datetime
 import random
 
 learning_bp = Blueprint('learning', __name__)
 
-@learning_bp.route('/train')
-def train_settings():
+def get_subject_data():
     all_tasks = get_all_trainable_tasks()
     subject_data = {}
     for t in all_tasks:
@@ -20,19 +19,55 @@ def train_settings():
     for subj in subject_data:
         subject_data[subj]["topics"] = sorted(list(subject_data[subj]["topics"]))
         subject_data[subj]["diffs"] = sorted(list(subject_data[subj]["diffs"]))
-    return render_template('train_settings.html', subject_data=subject_data)
+    return subject_data
+
+@learning_bp.route('/train')
+def train_settings():
+    return render_template('train_settings.html', subject_data=get_subject_data())
 
 @learning_bp.route('/start_training', methods=['POST'])
 def start_training():
     all_tasks = get_all_trainable_tasks()
-    sel_module, sel_topic, sel_diff = request.form.get('module'), request.form.get('topic'), request.form.get('difficulty')
-    force = request.form.get('force') == 'true'
-    filtered = [t for t in all_tasks if (sel_module == 'all' or t["module"] == sel_module) and (sel_topic == 'all' or t["topic"] == sel_topic) and (sel_diff == 'all' or str(t["difficulty"]) == sel_diff)]
+    sel_module = request.form.get('module', 'all')
+    sel_topic = request.form.get('topic', 'all')
+    sel_diff = request.form.get('difficulty', 'all')
+    
+    try:
+        limit = int(request.form.get('limit', 10))
+    except ValueError:
+        limit = 10
+        
+    force = request.form.get('ignore_srs') == 'on'
+    
+    # 1. Фильтруем все задачи по параметрам
+    filtered = [t for t in all_tasks if 
+                (sel_module == 'all' or t["module"] == sel_module) and 
+                (sel_topic == 'all' or t["topic"] == sel_topic) and 
+                (sel_diff == 'all' or str(t["difficulty"]) == sel_diff)]
+    
     today = datetime.now().date().strftime("%Y-%m-%d")
-    due = [t for t in filtered if force or get_review_state(t["id"]).due_date <= today]
-    random.shuffle(due)
-    if not due: return render_template('train.html', error="Нет задач для повторения!", can_force=bool(filtered), form_data=request.form)
-    session['task_ids'] = [t["id"] for t in due[:5]]; session['current_idx'] = 0; session['score'] = 0
+    
+    if force:
+        # Если игнорируем график, берем все подряд
+        session_tasks = filtered
+    else:
+        # Иначе берем созревшие, и если их мало — добираем несозревшие
+        due = [t for t in filtered if get_review_state(t["id"]).due_date <= today]
+        not_due = [t for t in filtered if get_review_state(t["id"]).due_date > today]
+        
+        # Сначала перемешиваем обе группы, потом склеиваем (созревшие идут первыми)
+        random.shuffle(due)
+        random.shuffle(not_due)
+        session_tasks = due + not_due
+    
+    random.shuffle(session_tasks)
+    
+    if not session_tasks: 
+        return render_template('train.html', error="Нет задач для тренировки по выбранным параметрам!", can_force=bool(filtered), form_data=request.form)
+        
+    session['task_ids'] = [t["id"] for t in session_tasks[:limit]]
+    session['current_idx'] = 0
+    session['score'] = 0
     return redirect(url_for('learning.question'))
 
 @learning_bp.route('/question', methods=['GET', 'POST'])
@@ -46,10 +81,8 @@ def question():
     if request.method == 'POST':
         ans = request.form.get('answer', '').strip()
         if task["type"] == "qa":
-            mod = next(m for m in modules if ("programming" if task["module"] == "Python" else task["module"].lower()) == m.name)
-            orig_task = next((t for t in mod.load_tasks() if t.id == task["id"]), None)
-            res = mod.check(orig_task, ans)
-            corr, fb = res.correct, res.feedback
+            corr = check_qa_answer(ans, task["answer_spec"])
+            fb = "✅ Верно!" if corr else f"❌ Ошибка. Правильный ответ: {task['answer_spec']}"
         else:
             challenge = next((c for c in load_code_challenges() if c["id"] == task["id"]), None)
             if challenge:
@@ -71,21 +104,38 @@ def summary():
 
 @learning_bp.route('/exam')
 def exam_settings():
-    all_tasks = get_all_trainable_tasks()
-    available_diffs = sorted(list(set(t["difficulty"] for t in all_tasks)))
-    return render_template('exam_settings.html', difficulties=available_diffs)
+    return render_template('exam_settings.html', subject_data=get_subject_data())
 
 @learning_bp.route('/start_exam', methods=['POST'])
 def start_exam():
     all_tasks = get_all_trainable_tasks()
-    limit, sel_diff = int(request.form.get('limit', 20)), request.form.get('difficulty', 'all')
-    filtered = [t for t in all_tasks if sel_diff == 'all' or str(t["difficulty"]) == sel_diff]
+    try:
+        limit = int(request.form.get('limit', 20))
+    except ValueError:
+        limit = 20
+        
+    sel_module = request.form.get('module', 'all')
+    sel_topic = request.form.get('topic', 'all')
+    sel_diff = request.form.get('difficulty', 'all')
+    
+    filtered = [t for t in all_tasks if 
+                (sel_module == 'all' or t["module"] == sel_module) and 
+                (sel_topic == 'all' or t["topic"] == sel_topic) and 
+                (sel_diff == 'all' or str(t["difficulty"]) == sel_diff)]
+    
     random.shuffle(filtered)
-    session['exam_task_ids'] = [t["id"] for t in filtered[:limit]]; session['exam_results'] = {} 
+    exam_tasks = filtered[:limit]
+    
+    if not exam_tasks:
+        return render_template('train.html', error="Нет задач для экзамена по выбранным параметрам.")
+        
+    session['exam_task_ids'] = [t["id"] for t in exam_tasks]
+    session['exam_results'] = {} 
     return redirect(url_for('learning.exam_dashboard'))
 
 @learning_bp.route('/exam_dashboard')
 def exam_dashboard():
+    if 'exam_task_ids' not in session: return redirect(url_for('learning.exam_settings'))
     all_tasks = get_all_trainable_tasks()
     results = session.get('exam_results', {})
     data = []
@@ -102,11 +152,11 @@ def api_check_answer():
     data = request.json; idx = int(data.get('idx')); ans = data.get('answer', '').strip()
     t_id = session['exam_task_ids'][idx]
     task = next((t for t in all_tasks if t["id"] == t_id), None)
+    
     if task["type"] == "qa":
-        mod = next(m for m in modules if ("programming" if task["module"] == "Python" else task["module"].lower()) == m.name)
-        orig_task = next((t for t in mod.load_tasks() if t.id == task["id"]), None)
-        res = mod.check(orig_task, ans)
-        correct, feedback, answer_spec = res.correct, res.feedback, orig_task.answer_spec
+        correct = check_qa_answer(ans, task["answer_spec"])
+        feedback = "Верно!" if correct else "Ошибка."
+        answer_spec = task["answer_spec"]
     else:
         challenge = next((c for c in load_code_challenges() if c["id"] == task["id"]), None)
         if challenge:
@@ -114,6 +164,7 @@ def api_check_answer():
             answer_spec = "Код"
         else:
             correct, feedback, answer_spec = False, "Ошибка", ""
+            
     session['exam_results'][t_id] = correct; session.modified = True
     save_attempt(Attempt(task["id"], datetime.now(), ans, correct))
     return jsonify({"correct": correct, "feedback": feedback, "answer_spec": answer_spec})

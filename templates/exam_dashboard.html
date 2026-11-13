@@ -5,7 +5,7 @@
     <title>Экзамен (Интерактивный)</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
-        .exam-layout { display: flex; width: 900px; height: 600px; background-color: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        .exam-layout { display: flex; width: 1100px; height: 700px; background-color: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
         .sidebar { width: 300px; background-color: #181825; border-right: 2px solid #313244; padding: 20px; display: flex; flex-direction: column; }
         .main-content { flex: 1; padding: 40px; display: flex; flex-direction: column; justify-content: center; position: relative; }
         
@@ -13,7 +13,7 @@
         .q-list { flex: 1; overflow-y: auto; margin-bottom: 20px; }
         .q-item { padding: 10px; margin-bottom: 5px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; font-size: 14px; border: 2px solid transparent; transition: 0.2s; }
         .q-item:hover { background-color: #313244; }
-        .q-item.active { border-color: var(--primary-color); background-color: #313244; }
+        .q-item.active { border-color: var(--accent-color); background-color: #313244; }
         .q-item.correct { color: var(--secondary-color); }
         .q-item.incorrect { color: var(--accent-color); }
         
@@ -25,6 +25,10 @@
         .feedback-box { padding: 15px; border-radius: 6px; margin-bottom: 20px; display: none; }
         .feedback-box.success { display: block; background-color: rgba(166, 227, 161, 0.1); border: 1px solid var(--secondary-color); color: var(--secondary-color); }
         .feedback-box.error { display: block; background-color: rgba(243, 139, 168, 0.1); border: 1px solid var(--accent-color); color: var(--accent-color); }
+
+        /* Стили для ввода кода в экзамене */
+        .code-input { width: 100%; min-height: 200px; padding: 15px; background-color: #11111b; border: 2px solid #45475a; color: #a6e3a1; border-radius: 6px; font-family: 'Consolas', 'Courier New', monospace; font-size: 14px; resize: vertical; box-sizing: border-box; outline: none; line-height: 1.5; margin-bottom: 10px; }
+        .code-input:focus { border-color: var(--accent-color); }
     </style>
 </head>
 <body>
@@ -47,14 +51,20 @@
         <div class="main-content">
             {% for q in tasks %}
                 <div class="question-area" id="area-{{ q.idx }}">
-                    <div class="progress-bar">Вопрос {{ q.idx + 1 }} из {{ total }}</div>
-                    <h3>Тема: {{ q.task.topic }} | Сложность: {{ q.task.difficulty }}</h3>
+                    <div class="progress-bar" style="color: var(--accent-color);">Вопрос {{ q.idx + 1 }} из {{ total }}</div>
+                    <h3>Тема: {{ q.task.topic }} | Сложность: {{ q.task.difficulty }} | Язык: {{ q.task.module }}</h3>
                     <p class="question-text">{{ q.task.prompt }}</p>
                     
                     <div class="feedback-box" id="feedback-{{ q.idx }}"></div>
 
                     <form onsubmit="submitAnswer(event, {{ q.idx }})" id="form-{{ q.idx }}">
-                        <input type="text" name="answer" class="input-field" placeholder="Твой ответ..." autocomplete="off" id="input-{{ q.idx }}">
+                        {% if q.task.type == 'code' %}
+                            <!-- Если задача на код, показываем большое поле -->
+                            <textarea name="answer" class="code-input" placeholder="Напиши свой код здесь..." autocomplete="off" spellcheck="false" id="input-{{ q.idx }}"></textarea>
+                        {% else %}
+                            <!-- Если обычный вопрос, показываем строку -->
+                            <input type="text" name="answer" class="input-field" placeholder="Твой ответ..." autocomplete="off" id="input-{{ q.idx }}">
+                        {% endif %}
                         <button type="submit" class="btn primary" style="background-color: var(--accent-color); color: black;">Ответить</button>
                     </form>
                 </div>
@@ -65,7 +75,6 @@
     <script>
         let currentIdx = 0;
 
-        // Переключение на конкретный вопрос
         function showQuestion(idx) {
             document.querySelectorAll('.question-area').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.q-item').forEach(el => el.classList.remove('active'));
@@ -74,20 +83,21 @@
             document.getElementById(`item-${idx}`).classList.add('active');
             
             const input = document.getElementById(`input-${idx}`);
-            if(input && !document.getElementById(`feedback-${idx}`).classList.contains('success') && !document.getElementById(`feedback-${idx}`).classList.contains('error')) {
+            const feedback = document.getElementById(`feedback-${idx}`);
+            
+            // Фокусируемся только если еще нет фидбека (не ответили)
+            if (input && !feedback.classList.contains('success') && !feedback.classList.contains('error')) {
                 input.focus();
             }
             currentIdx = idx;
         }
 
-        // Обработка клика по списку слева
         document.querySelectorAll('.q-item').forEach(item => {
             item.addEventListener('click', () => {
                 showQuestion(parseInt(item.dataset.idx));
             });
         });
 
-        // Отправка ответа через AJAX
         async function submitAnswer(event, idx) {
             event.preventDefault();
             const input = document.getElementById(`input-${idx}`);
@@ -105,7 +115,7 @@
             // Показываем фидбек
             const feedbackBox = document.getElementById(`feedback-${idx}`);
             feedbackBox.className = `feedback-box ${data.correct ? 'success' : 'error'}`;
-            feedbackBox.innerHTML = `<p>${data.feedback}</p>` + (!data.correct ? `<p>Правильный ответ: <strong>${data.answer_spec}</strong></p>` : '');
+            feedbackBox.innerHTML = `<p>${data.feedback}</p>` + (!data.correct && data.answer_spec ? `<p>Правильный ответ: <strong>${data.answer_spec}</strong></p>` : '');
             
             // Меняем цвет кнопки в списке
             const item = document.getElementById(`item-${idx}`);
@@ -134,7 +144,6 @@
             }, 1500);
         }
 
-        // При загрузке открываем первый неотвеченный вопрос
         document.addEventListener("DOMContentLoaded", () => {
             for (let i = 0; i < {{ total }}; i++) {
                 const item = document.getElementById(`item-${i}`);

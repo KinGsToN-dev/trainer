@@ -174,3 +174,85 @@ select {
 select:focus {
     border-color: var(--primary-color);
 }
+
+/* ==========================================
+   МОБИЛЬНАЯ АДАПТАЦИЯ (Экраны меньше 768px)
+   ========================================== */
+@media screen and (max-width: 768px) {
+    /* 1. Общие контейнеры */
+    body {
+        padding: 10px !important;
+    }
+    .container, .profile-container, .exam-layout {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 15px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 2. Главное меню */
+    h1 { font-size: 24px !important; }
+    .btn { padding: 10px !important; font-size: 14px !important; }
+    .stats-card { padding: 10px !important; }
+
+    /* 3. Песочница (Code Runner) */
+    .layout {
+        flex-direction: column !important;
+        height: auto !important;
+        width: 100% !important;
+    }
+    .sidebar {
+        width: 100% !important;
+        max-height: 300px !important; /* Ограничиваем высоту списка задач */
+        border-right: none !important;
+        border-bottom: 2px solid #313244 !important;
+        box-sizing: border-box;
+    }
+    .main-pane {
+        width: 100% !important;
+        height: 500px !important;
+    }
+    .pane-header {
+        flex-direction: column !important;
+        gap: 10px !important;
+        text-align: center;
+    }
+    .btn-group {
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+    }
+    .CodeMirror {
+        font-size: 13px !important;
+    }
+
+    /* 4. Экзамен (Дашборд) */
+    .exam-layout {
+        flex-direction: column !important;
+        height: auto !important;
+    }
+    .exam-layout .sidebar {
+        width: 100% !important;
+        border-bottom: 2px solid #313244 !important;
+    }
+    .grid-container {
+        grid-template-columns: repeat(4, 1fr) !important; /* Уменьшаем сетку кнопок */
+    }
+
+    /* 5. Тренировка */
+    .top-bar { flex-direction: column !important; gap: 10px !important; }
+    .question-text { font-size: 16px !important; }
+    .code-input { min-height: 150px !important; font-size: 13px !important; }
+    .btn-row { flex-direction: column !important; }
+
+    /* 6. Управление карточками и Профиль */
+    .search-panel { flex-direction: column !important; }
+    .search-input, .search-select, .btn-clear { width: 100% !important; }
+    
+    .profile-container .header-row { flex-direction: column !important; gap: 15px !important; align-items: flex-start !important; }
+    .medals-grid { justify-content: center !important; }
+    .danger-zone { flex-direction: column !important; gap: 15px !important; text-align: center; }
+    
+    /* Скролл для таблиц на телефоне */
+    .table-container { width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+    table { min-width: 600px; } /* Таблица не сжимается, а скроллится */
+}

@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <title>Настройки тренировки</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .checkbox-group { display: flex; align-items: center; gap: 10px; margin: 15px 0; background: #181825; padding: 10px; border-radius: 6px; border: 1px solid #313244;}
+        .checkbox-group input { width: 20px; height: 20px; cursor: pointer; }
+        .checkbox-group label { margin: 0; cursor: pointer; color: #a6adc8; }
+        .hint { font-size: 12px; color: #585b70; margin-top: 5px; display: block;}
+    </style>
 </head>
 <body>
     <div class="container">
@@ -11,7 +17,11 @@
         <p class="subtitle">Выбери, что будешь тренировать сегодня</p>
         
         <form action="/start_training" method="POST">
-            <label for="module">Предмет (Язык):</label>
+            <label for="limit">Сколько вопросов взять?</label>
+            <input type="number" name="limit" id="limit" value="10" min="1" max="1000" style="width: 100%; padding: 12px; background-color: #11111b; border: 2px solid #45475a; color: white; border-radius: 6px; font-size: 16px; box-sizing: border-box;">
+            <span class="hint">Введи любое число (например, 7, 15 или 50)</span>
+
+            <label for="module" style="margin-top: 15px;">Предмет (Язык):</label>
             <select name="module" id="module" onchange="updateFilters()">
                 <option value="all">Все предметы</option>
                 {% for subj in subject_data.keys() %}
@@ -28,6 +38,11 @@
             <select name="difficulty" id="difficulty">
                 <option value="all">Любая</option>
             </select>
+
+            <div class="checkbox-group">
+                <input type="checkbox" name="ignore_srs" id="ignore_srs">
+                <label for="ignore_srs">Игнорировать график (повторить всё подряд)</label>
+            </div>
 
             <button type="submit" class="btn primary">Поехали!</button>
         </form>
@@ -70,7 +85,6 @@
             Array.from(diffsToAdd).sort((a,b) => a-b).forEach(d => {
                 const opt = document.createElement('option');
                 opt.value = d;
-                // ИСПРАВЛЕНИЕ: Расшифровка сложности
                 if (d == 1) opt.textContent = "1 - Легкая";
                 else if (d == 2) opt.textContent = "2 - Средняя";
                 else if (d == 3) opt.textContent = "3 - Сложная";

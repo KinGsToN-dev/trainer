@@ -23,16 +23,14 @@
         .btn-sm { padding: 5px 10px; font-size: 12px; cursor: pointer; border-radius: 4px; border: none; }
         .btn-edit { background: var(--primary-color); color: black; }
         .btn-del { background: var(--accent-color); color: white; }
-        .btn-add { background: var(--secondary-color); color: black; padding: 10px 15px; font-weight: bold; text-decoration: none; border-radius: 6px; border: none; cursor: pointer;}
+        .btn-add { background: var(--secondary-color); color: black; padding: 10px 15px; font-weight: bold; text-decoration: none; border-radius: 6px; border: none; cursor: pointer; margin-left: 10px;}
+        .btn-ai-gen { background: #cba6f7; color: black; padding: 10px 15px; font-weight: bold; text-decoration: none; border-radius: 6px; border: none; cursor: pointer; margin-left: 10px;}
         
-        /* Danger Zone */
         .danger-zone { margin-top: 30px; border: 1px solid var(--accent-color); border-radius: 8px; padding: 20px; background: rgba(243, 139, 168, 0.05); display: flex; justify-content: space-between; align-items: center;}
         .danger-text h3 { color: var(--accent-color); margin: 0 0 5px 0; font-size: 16px; }
         .danger-text p { font-size: 13px; color: #a6adc8; margin: 0; }
         .btn-danger { background-color: var(--accent-color); color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap; }
-        .btn-danger:hover { opacity: 0.8; }
         
-        /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: var(--card-bg); padding: 30px; border-radius: 12px; width: 600px; max-height: 90vh; overflow-y: auto; text-align: left; }
         .modal-content h3 { margin-top: 0; color: var(--primary-color); }
@@ -40,6 +38,7 @@
         .form-group label { display: block; margin-bottom: 5px; color: #a6adc8; font-size: 13px; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; background: #11111b; border: 1px solid #45475a; color: white; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
         .form-group textarea { height: 80px; resize: vertical; }
+        .custom-input { display: none; margin-top: 5px; border-color: var(--secondary-color) !important; }
     </style>
 </head>
 <body>
@@ -49,33 +48,33 @@
                 <h1 style="margin: 0;">База задач</h1>
                 <p class="subtitle" style="margin-top: 5px;">Всего карточек: <span id="total-count">{{ tasks|length }}</span>. Найдено: <span id="visible-count">{{ tasks|length }}</span></p>
             </div>
-            <button class="btn-add" onclick="openAddModal()">+ Добавить задачу</button>
+            <div>
+                <button class="btn-add" onclick="openAddModal()">+ Добавить задачу</button>
+                <button class="btn-ai-gen" onclick="openAiModal()">🤖 Сгенерировать ИИ</button>
+            </div>
         </div>
 
         <div class="search-panel">
             <input type="text" id="search-text" class="search-input" placeholder="Поиск по ID, теме или тексту вопроса..." onkeyup="filterTable()">
-            
             <select id="search-subject" class="search-select" onchange="filterTable()">
                 <option value="all">Все предметы</option>
-                <option value="programming">Python (QA)</option>
-                <option value="english">English (QA)</option>
+                <option value="Python">Python (QA)</option>
+                <option value="English">English (QA)</option>
                 <option value="Python">Python (Код)</option>
                 <option value="JS">JS (Код)</option>
                 <option value="PHP">PHP (Код)</option>
                 <option value="SQL">SQL (Код)</option>
             </select>
-            
             <select id="search-diff" class="search-select" onchange="filterTable()">
                 <option value="all">Любая сложность</option>
                 <option value="1">Сложность 1</option>
                 <option value="2">Сложность 2</option>
                 <option value="3">Сложность 3</option>
             </select>
-
             <button class="btn-clear" onclick="clearFilters()">Сброс</button>
         </div>
         
-        <div style="max-height: 400px; overflow-y: auto; border: 1px solid #313244; border-radius: 8px;">
+        <div class="table-container" style="max-height: 400px; overflow-y: auto; border: 1px solid #313244; border-radius: 8px;">
             <table id="tasks-table">
                 <thead>
                     <tr>
@@ -105,11 +104,10 @@
             </table>
         </div>
 
-        <!-- Danger Zone (Очистка всей базы) -->
         <div class="danger-zone">
             <div class="danger-text">
                 <h3>⚠️ Опасная зона</h3>
-                <p>Это действие безвозвратно удалит ВСЕ карточки (Python QA, English QA и все задачи по коду).</p>
+                <p>Это действие безвозвратно удалит ВСЕ карточки.</p>
             </div>
             <button class="btn-danger" onclick="clearAllCards()">Очистить всю базу задач</button>
         </div>
@@ -117,67 +115,65 @@
         <a href="/" class="btn primary" style="margin-top: 20px; display: block; text-align: center;">На главную</a>
     </div>
 
-    <!-- Модальное окно (без изменений) -->
+    <!-- Модалка ИИ-Генератора -->
+    <div class="modal" id="ai-modal">
+        <div class="modal-content">
+            <h3>🤖 Генерация карточек</h3>
+            <div class="form-group">
+                <label>Предмет</label>
+                <select id="ai-subject-select" onchange="updateAiTopics()">
+                    {% for subj in subject_data.keys() %}
+                        <option value="{{ subj }}">{{ subj }}</option>
+                    {% endfor %}
+                    <option value="__custom__" style="color: var(--secondary-color); font-weight: bold;">+ Добавить свой...</option>
+                </select>
+                <input type="text" id="ai-subject-custom" class="custom-input" placeholder="Введи название предмета...">
+            </div>
+            <div class="form-group">
+                <label>Тема</label>
+                <select id="ai-topic-select" onchange="toggleAiCustom('topic')">
+                    <!-- Опции заполняются через JS -->
+                </select>
+                <input type="text" id="ai-topic-custom" class="custom-input" placeholder="Введи свою тему...">
+            </div>
+            <div class="form-group">
+                <label>Сложность</label>
+                <select id="ai-diff"><option value="1">1 - Легкая</option><option value="2">2 - Средняя</option><option value="3">3 - Сложная</option></select>
+            </div>
+            <div class="form-group">
+                <label>Количество</label>
+                <input type="number" id="ai-count" value="5" min="1" max="15">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn primary" id="ai-gen-btn" onclick="generateAI()" style="flex: 1; background: #cba6f7; color: black;">Сгенерировать</button>
+                <button class="btn secondary" onclick="closeAiModal()" style="flex: 1;">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка Ручного Добавления/Редактирования -->
     <div class="modal" id="task-modal">
         <div class="modal-content">
             <h3 id="modal-title">Добавить задачу</h3>
             <input type="hidden" id="edit-id">
-            
             <div class="form-group" id="group-type">
                 <label>Тип задачи</label>
-                <select id="edit-type" onchange="toggleTypeFields()">
-                    <option value="qa">Вопрос-Ответ (QA)</option>
-                    <option value="code">Задача по коду</option>
-                </select>
+                <select id="edit-type" onchange="toggleTypeFields()"><option value="qa">Вопрос-Ответ (QA)</option><option value="code">Задача по коду</option></select>
             </div>
-
             <div class="form-group" id="group-lang">
                 <label>Язык / Модуль</label>
                 <select id="edit-lang">
-                    <option value="programming">Python (QA)</option>
-                    <option value="english">English (QA)</option>
-                    <option value="Python">Python (Код)</option>
-                    <option value="JS">JS (Код)</option>
-                    <option value="PHP">PHP (Код)</option>
-                    <option value="SQL">SQL (Код)</option>
+                    <option value="Python">Python (QA)</option><option value="English">English (QA)</option>
+                    <option value="Python">Python (Код)</option><option value="JS">JS (Код)</option><option value="PHP">PHP (Код)</option><option value="SQL">SQL (Код)</option>
                 </select>
             </div>
-
-            <div class="form-group">
-                <label>Тема</label>
-                <input type="text" id="edit-topic">
-            </div>
-            
-            <div class="form-group">
-                <label>Сложность (1-3)</label>
-                <input type="number" id="edit-diff" min="1" max="3" value="1">
-            </div>
-
-            <div class="form-group">
-                <label id="label-prompt">Вопрос / Название</label>
-                <input type="text" id="edit-prompt">
-            </div>
-
-            <div class="form-group" id="group-answer">
-                <label>Правильный ответ</label>
-                <input type="text" id="edit-answer">
-            </div>
-
-            <div class="form-group" id="group-desc" style="display:none;">
-                <label>Описание задачи (для кода)</label>
-                <textarea id="edit-desc"></textarea>
-            </div>
-            
-            <div class="form-group" id="group-starter" style="display:none;">
-                <label>Стартовый код / Начало</label>
-                <textarea id="edit-starter"></textarea>
-            </div>
-
-            <div class="form-group" id="group-tests" style="display:none;">
-                <label>Тесты (каждый с новой строки) или setup_sql</label>
-                <textarea id="edit-tests" style="height: 100px;"></textarea>
-            </div>
-
+            <div class="form-group"><label>Тема</label><input type="text" id="edit-topic"></div>
+            <div class="form-group"><label>Сложность (1-3)</label><input type="number" id="edit-diff" min="1" max="3" value="1"></div>
+            <div class="form-group"><label id="label-prompt">Вопрос / Название</label><input type="text" id="edit-prompt"></div>
+            <div class="form-group" id="group-answer"><label>Правильный ответ</label><input type="text" id="edit-answer"></div>
+            <div class="form-group" id="group-desc" style="display:none;"><label>Описание задачи (для кода)</label><textarea id="edit-desc"></textarea></div>
+            <div class="form-group" id="group-starter" style="display:none;"><label>Стартовый код / Начало</label><textarea id="edit-starter"></textarea></div>
+            <div class="form-group" id="group-tests" style="display:none;"><label>Тесты (каждый с новой строки) или setup_sql</label><textarea id="edit-tests" style="height: 100px;"></textarea></div>
             <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button class="btn primary" onclick="saveTask()" style="flex: 1;">Сохранить</button>
                 <button class="btn secondary" onclick="closeModal()" style="flex: 1;">Отмена</button>
@@ -187,18 +183,101 @@
 
     <script>
         let isEdit = false;
+        const subjectData = {{ subject_data|tojson|safe }};
+
+        // --- ИИ ГЕНЕРАЦИЯ ---
+        function openAiModal() { 
+            document.getElementById('ai-modal').style.display = 'flex';
+            updateAiTopics(); 
+        }
+        function closeAiModal() { document.getElementById('ai-modal').style.display = 'none'; }
+
+        function toggleAiCustom(type) {
+            const selectEl = document.getElementById(`${type}-select`);
+            const customInput = document.getElementById(`${type}-custom`);
+            if (selectEl.value === '__custom__') { customInput.style.display = 'block'; customInput.focus(); } 
+            else { customInput.style.display = 'none'; }
+        }
+
+        function updateAiTopics() {
+            const subjectSelect = document.getElementById('ai-subject-select');
+            const topicSelect = document.getElementById('ai-topic-select');
+            const selectedSubject = subjectSelect.value;
+            
+            topicSelect.innerHTML = '';
+            
+            if (selectedSubject === '__custom__') {
+                // Если выбран ручной ввод предмета, прячем список тем и показываем поле ввода
+                document.getElementById('ai-subject-custom').style.display = 'block';
+                topicSelect.style.display = 'none';
+                document.getElementById('ai-topic-custom').style.display = 'block';
+                document.getElementById('ai-topic-custom').value = ''; // Очищаем на всякий случай
+            } else {
+                // Восстанавливаем выпадающие списки
+                document.getElementById('ai-subject-custom').style.display = 'none';
+                topicSelect.style.display = 'block';
+                document.getElementById('ai-topic-custom').style.display = 'none';
+                document.getElementById('ai-topic-custom').value = '';
+                
+                const topics = subjectData[selectedSubject] || [];
+                topics.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t; opt.textContent = t; topicSelect.appendChild(opt);
+                });
+                
+                const customOpt = document.createElement('option');
+                customOpt.value = '__custom__'; customOpt.textContent = '+ Добавить свою...'; 
+                customOpt.style.color = 'var(--secondary-color)'; customOpt.style.fontWeight = 'bold'; 
+                topicSelect.appendChild(customOpt);
+            }
+        }
+
+        async function generateAI() {
+            // ИСПРАВЛЕНИЕ ЛОГИКИ: Проверяем, что именно выбрано в списках
+            let subjectSelect = document.getElementById('ai-subject-select').value;
+            let subject = subjectSelect === '__custom__' ? document.getElementById('ai-subject-custom').value.trim() : subjectSelect;
+            
+            let topicSelect = document.getElementById('ai-topic-select').value;
+            // Если предмет кастомный ИЛИ выбрана кастомная тема — берем из текстового поля
+            let topic = (subjectSelect === '__custom__' || topicSelect === '__custom__') 
+                        ? document.getElementById('ai-topic-custom').value.trim() 
+                        : topicSelect;
+
+            if (!subject || !topic) return alert("Заполни все поля!");
+
+            const diff = document.getElementById('ai-diff').value;
+            const count = document.getElementById('ai-count').value;
+            const btn = document.getElementById('ai-gen-btn');
+
+            btn.textContent = 'Генерация... (10-20 сек)';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/generate_qa', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({subject: subject, topic: topic, difficulty: diff, count: count})
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`Успешно добавлено ${data.count} карточек! Модель: ${data.model}`);
+                    location.reload();
+                } else {
+                    alert("Ошибка: " + data.message);
+                }
+            } catch (e) {
+                alert("Ошибка сервера.");
+            } finally {
+                btn.textContent = 'Сгенерировать';
+                btn.disabled = false;
+            }
+        }
 
         // --- ОЧИСТКА БАЗЫ ---
         async function clearAllCards() {
-            if (!confirm("Ты АБСОЛЮТНО уверен? Все карточки будут удалены навсегда. Это действие нельзя отменить (если у тебя нет бэкапа).")) return;
-            
-            const response = await fetch('/api/clear_all_cards', { method: 'POST' });
-            if (response.ok) {
-                alert("Все карточки удалены!");
-                location.reload();
-            } else {
-                alert("Ошибка при очистке.");
-            }
+            if (!confirm("Ты АБСОЛЮТНО уверен? Все карточки будут удалены навсегда.")) return;
+            await fetch('/api/clear_all_cards', { method: 'POST' });
+            location.reload();
         }
 
         // --- ФИЛЬТРАЦИЯ ---
@@ -206,29 +285,20 @@
             const textQuery = document.getElementById('search-text').value.toLowerCase();
             const subjectQuery = document.getElementById('search-subject').value;
             const diffQuery = document.getElementById('search-diff').value;
-            
             const rows = document.querySelectorAll('#tasks-table tbody tr');
             let visibleCount = 0;
-
             rows.forEach(row => {
                 const idText = row.cells[0].textContent.toLowerCase();
                 const topicText = row.cells[2].textContent.toLowerCase();
                 const promptText = row.cells[4].textContent.toLowerCase();
                 const subject = row.getAttribute('data-subject');
                 const diff = row.getAttribute('data-diff');
-
-                const matchText = idText.includes(textQuery) || topicText.includes(textQuery) || promptText.includes(textQuery);
-                const matchSubject = (subjectQuery === 'all' || subject === subjectQuery);
-                const matchDiff = (diffQuery === 'all' || diff === diffQuery);
-
-                if (matchText && matchSubject && matchDiff) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
+                if ((idText.includes(textQuery) || topicText.includes(textQuery) || promptText.includes(textQuery)) && 
+                    (subjectQuery === 'all' || subject === subjectQuery) && 
+                    (diffQuery === 'all' || diff === diffQuery)) {
+                    row.style.display = ''; visibleCount++;
+                } else { row.style.display = 'none'; }
             });
-            
             document.getElementById('visible-count').textContent = visibleCount;
         }
 
@@ -275,40 +345,31 @@
             document.getElementById('task-modal').style.display = 'flex';
         }
 
-        function closeModal() {
-            document.getElementById('task-modal').style.display = 'none';
-        }
+        function closeModal() { document.getElementById('task-modal').style.display = 'none'; }
 
         async function editTask(id) {
             isEdit = true;
             const response = await fetch(`/api/get_card/${id}`);
             const data = await response.json();
-            
             document.getElementById('modal-title').textContent = 'Редактировать задачу';
             document.getElementById('edit-id').value = data.id;
             document.getElementById('edit-type').disabled = true;
             document.getElementById('group-type').style.display = 'none';
-
             if (data.id.startsWith('code_')) {
                 document.getElementById('edit-type').value = 'code';
                 document.getElementById('edit-lang').value = data.lang || 'Python';
                 document.getElementById('edit-desc').value = data.description || '';
                 document.getElementById('edit-starter').value = data.starter_code || '';
-                if (data.lang === 'SQL') {
-                    document.getElementById('edit-tests').value = data.setup_sql || '';
-                } else {
-                    document.getElementById('edit-tests').value = (data.tests || []).join('\n');
-                }
+                if (data.lang === 'SQL') document.getElementById('edit-tests').value = data.setup_sql || '';
+                else document.getElementById('edit-tests').value = (data.tests || []).join('\n');
             } else {
                 document.getElementById('edit-type').value = 'qa';
                 document.getElementById('edit-lang').value = data.module || 'programming';
                 document.getElementById('edit-answer').value = data.answer_spec || '';
             }
-
             document.getElementById('edit-topic').value = data.topic || '';
             document.getElementById('edit-diff').value = data.difficulty || 1;
             document.getElementById('edit-prompt').value = data.prompt || data.title || '';
-            
             toggleTypeFields();
             document.getElementById('task-modal').style.display = 'flex';
         }
@@ -320,7 +381,6 @@
             const topic = document.getElementById('edit-topic').value;
             const diff = document.getElementById('edit-diff').value;
             const prompt = document.getElementById('edit-prompt').value;
-            
             if (isEdit) {
                 const data = { id: id, topic: topic, difficulty: parseInt(diff) };
                 if (type === 'qa') {
@@ -334,71 +394,50 @@
                     if (lang === 'SQL') data.setup_sql = document.getElementById('edit-tests').value;
                     else data.tests = document.getElementById('edit-tests').value.split('\n').filter(l => l.trim());
                 }
-                await fetch('/api/save_card', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
-                });
+                await fetch('/api/save_card', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
             } else {
                 const data = { type: type, lang: lang, topic: topic, difficulty: diff, prompt: prompt };
-                if (type === 'qa') {
-                    data.answer = document.getElementById('edit-answer').value;
-                } else {
+                if (type === 'qa') data.answer = document.getElementById('edit-answer').value;
+                else {
                     data.title = prompt;
                     data.description = document.getElementById('edit-desc').value;
                     data.starter_code = document.getElementById('edit-starter').value;
                     if (lang === 'SQL') data.setup_sql = document.getElementById('edit-tests').value;
                     else data.tests = document.getElementById('edit-tests').value;
                 }
-                await fetch('/api/create_card', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
-                });
+                await fetch('/api/create_card', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
             }
             location.reload();
         }
 
         async function deleteTask(id) {
-            if (!confirm(`Вы уверены, что хотите удалить задачу ${id}?`)) return;
-            await fetch('/api/delete_card', {
-                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id: id})
-            });
+            if (!confirm(`Удалить задачу ${id}?`)) return;
+            await fetch('/api/delete_card', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id: id}) });
             document.getElementById(`row-${id}`).remove();
             filterTable(); 
         }
 
-        // --- СОРТИРОВКА ---
         function sortTable(n) {
             var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
             table = document.getElementById("tasks-table");
-            switching = true;
-            dir = "asc";
+            switching = true; dir = "asc";
             while (switching) {
-                switching = false;
-                rows = table.rows;
+                switching = false; rows = table.rows;
                 for (i = 1; i < (rows.length - 1); i++) {
                     shouldSwitch = false;
-                    x = rows[i].getElementsByTagName("TD")[n];
-                    y = rows[i + 1].getElementsByTagName("TD")[n];
-                    
+                    x = rows[i].getElementsByTagName("TD")[n]; y = rows[i + 1].getElementsByTagName("TD")[n];
                     if (rows[i].style.display === 'none' || rows[i+1].style.display === 'none') continue;
-
-                    let xVal = x.innerHTML.toLowerCase();
-                    let yVal = y.innerHTML.toLowerCase();
+                    let xVal = x.innerHTML.toLowerCase(); let yVal = y.innerHTML.toLowerCase();
                     if (n === 3) { xVal = parseInt(xVal); yVal = parseInt(yVal); }
-                    
-                    if (dir == "asc") {
-                        if (xVal > yVal) { shouldSwitch = true; break; }
-                    } else if (dir == "desc") {
-                        if (xVal < yVal) { shouldSwitch = true; break; }
-                    }
+                    if (dir == "asc") { if (xVal > yVal) { shouldSwitch = true; break; } } 
+                    else if (dir == "desc") { if (xVal < yVal) { shouldSwitch = true; break; } }
                 }
-                if (shouldSwitch) {
-                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                    switching = true;
-                    switchCount++;
-                } else {
-                    if (switchCount == 0 && dir == "asc") { dir = "desc"; switching = true; }
-                }
+                if (shouldSwitch) { rows[i].parentNode.insertBefore(rows[i + 1], rows[i]); switching = true; switchCount++; } 
+                else { if (switchCount == 0 && dir == "asc") { dir = "desc"; switching = true; } }
             }
         }
     </script>
 </body>
 </html>
+
+

@@ -1,221 +1,263 @@
 [
   {
     "id": "py_001",
-    "module": "programming",
-    "topic": "syntax",
+    "module": "Английский",
+    "topic": "Глаголы",
     "type": "qa",
-    "prompt": "Какая функция используется для вывода текста?",
-    "answer_spec": "print",
+    "prompt": "Какая форма прошедшего времени у глагола go?",
+    "answer_spec": "went",
     "difficulty": 1,
-    "tags": []
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_002",
-    "module": "programming",
-    "topic": "data_structures",
+    "module": "Английский",
+    "topic": "Глаголы",
     "type": "qa",
-    "prompt": "Какой тип данных неизменяемый: list или tuple?",
-    "answer_spec": "tuple",
+    "prompt": "Какая форма третьего лица у глагола have?",
+    "answer_spec": "has",
     "difficulty": 1,
-    "tags": []
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_003",
-    "module": "programming",
-    "topic": "syntax",
+    "module": "Английский",
+    "topic": "Глаголы",
     "type": "qa",
-    "prompt": "Какой оператор используется для целочисленного деления?",
-    "answer_spec": "//",
+    "prompt": "Какая форма ing у глагола run?",
+    "answer_spec": "running",
     "difficulty": 1,
-    "tags": []
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_004",
-    "module": "programming",
-    "topic": "syntax",
+    "module": "Английский",
+    "topic": "Глаголы",
     "type": "qa",
-    "prompt": "Какой оператор используется для возведения в степень?",
-    "answer_spec": "**",
+    "prompt": "Какая форма причастия прошедшего времени у write?",
+    "answer_spec": "written",
     "difficulty": 1,
-    "tags": []
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_005",
-    "module": "programming",
-    "topic": "data_structures",
+    "module": "Английский",
+    "topic": "Глаголы",
     "type": "qa",
-    "prompt": "Какая структура данных хранит пары ключ-значение?",
-    "answer_spec": "dict",
+    "prompt": "Какая частица стоит перед инфинитивом?",
+    "answer_spec": "to",
     "difficulty": 1,
-    "tags": []
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_006",
-    "module": "programming",
-    "topic": "data_structures",
+    "module": "Php",
+    "topic": "массивы",
     "type": "qa",
-    "prompt": "Какой метод добавляет элемент в конец списка?",
-    "answer_spec": "append",
+    "prompt": "How do you create an empty array in PHP?",
+    "answer_spec": "array()",
     "difficulty": 1,
-    "tags": []
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_007",
-    "module": "programming",
-    "topic": "algorithms",
+    "module": "Php",
+    "topic": "массивы",
     "type": "qa",
-    "prompt": "Какая сложность у бинарного поиска в отсортированном массиве? (O(n), O(log n), O(1))",
-    "answer_spec": "O(log n)",
-    "difficulty": 2,
-    "tags": []
+    "prompt": "What syntax creates an array with initial values [\"a\", \"b\"]?",
+    "answer_spec": "[\"a\",\"b\"]",
+    "difficulty": 1,
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_008",
-    "module": "programming",
-    "topic": "syntax",
+    "module": "Php",
+    "topic": "массивы",
     "type": "qa",
-    "prompt": "Какое ключевое слово создает анонимную функцию?",
-    "answer_spec": "lambda",
-    "difficulty": 2,
-    "tags": []
+    "prompt": "Which function returns the number of elements in an array?",
+    "answer_spec": "count()",
+    "difficulty": 1,
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_009",
-    "module": "programming",
-    "topic": "syntax",
+    "module": "Php",
+    "topic": "массивы",
     "type": "qa",
-    "prompt": "Какой оператор используется для проверки, что элемент есть в списке (in / is / ==)?",
-    "answer_spec": "in",
+    "prompt": "How to get the first element of $arr in PHP?",
+    "answer_spec": "$arr[0]",
     "difficulty": 1,
-    "tags": []
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_010",
-    "module": "programming",
-    "topic": "data_structures",
+    "module": "Php",
+    "topic": "массивы",
     "type": "qa",
-    "prompt": "Какой метод удаляет последний элемент списка и возвращает его?",
-    "answer_spec": "pop",
-    "difficulty": 2,
-    "tags": []
+    "prompt": "Which function appends an element to the end of an array?",
+    "answer_spec": "array_push()",
+    "difficulty": 1,
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_011",
-    "module": "programming",
-    "topic": "algorithms",
+    "module": "Php",
+    "topic": "массивы",
     "type": "qa",
-    "prompt": "Как называется алгоритм сортировки, который рекурсивно делит массив пополам? (Quick / Merge / Bubble)",
-    "answer_spec": "merge",
-    "difficulty": 3,
-    "tags": []
+    "prompt": "Which function removes the last element from an array?",
+    "answer_spec": "array_pop()",
+    "difficulty": 1,
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_012",
-    "module": "programming",
-    "topic": "oop",
+    "module": "Php",
+    "topic": "массивы",
     "type": "qa",
-    "prompt": "Какой метод вызывается при создании нового объекта класса?",
-    "answer_spec": "__init__",
-    "difficulty": 2,
-    "tags": []
+    "prompt": "What does array_keys([\"x\"=>1,\"y\"=>2]) return?",
+    "answer_spec": "[\"x\",\"y\"]",
+    "difficulty": 1,
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_013",
-    "module": "programming",
-    "topic": "syntax",
+    "module": "Php",
+    "topic": "массивы",
     "type": "qa",
-    "prompt": "Какая функция возвращает длину объекта?",
-    "answer_spec": "len",
+    "prompt": "Which function merges two arrays into one?",
+    "answer_spec": "array_merge()",
     "difficulty": 1,
-    "tags": []
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_014",
-    "module": "programming",
-    "topic": "data_structures",
+    "module": "Php",
+    "topic": "массивы",
     "type": "qa",
-    "prompt": "Какой тип данных используется для создания множеств (уникальных элементов)?",
-    "answer_spec": "set",
-    "difficulty": 2,
-    "tags": []
+    "prompt": "Which function checks if a value exists in an array?",
+    "answer_spec": "in_array()",
+    "difficulty": 1,
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_015",
-    "module": "programming",
-    "topic": "oop",
+    "module": "Php",
+    "topic": "массивы",
     "type": "qa",
-    "prompt": "Какой функцией проверяют, является ли объект экземпляром класса?",
-    "answer_spec": "isinstance",
-    "difficulty": 3,
-    "tags": []
+    "prompt": "Which function reverses the order of an array?",
+    "answer_spec": "array_reverse()",
+    "difficulty": 1,
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_016",
-    "module": "programming",
-    "topic": "algorithms",
+    "module": "Python",
+    "topic": "Массивы",
     "type": "qa",
-    "prompt": "Какая сложность доступа к элементу словаря (dict) в среднем? (O(n), O(1), O(log n))",
-    "answer_spec": "O(1)",
-    "difficulty": 2,
-    "tags": []
+    "prompt": "Какой тип данных в Python используется для массивов?",
+    "answer_spec": "list",
+    "difficulty": 1,
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_017",
-    "module": "programming",
-    "topic": "syntax",
+    "module": "Python",
+    "topic": "Массивы",
     "type": "qa",
-    "prompt": "Какой символ используется для однострочного комментария?",
-    "answer_spec": "#",
+    "prompt": "Какой индекс первым элемента в массиве?",
+    "answer_spec": "0",
     "difficulty": 1,
-    "tags": []
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_018",
-    "module": "programming",
-    "topic": "syntax",
+    "module": "Python",
+    "topic": "Массивы",
     "type": "qa",
-    "prompt": "Как называется конструкция if-elif-else для ветвления?",
-    "answer_spec": "условный оператор",
+    "prompt": "Как добавить элемент в конец массива?",
+    "answer_spec": "append",
     "difficulty": 1,
-    "tags": []
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_019",
-    "module": "programming",
-    "topic": "data_structures",
+    "module": "Python",
+    "topic": "Массивы",
     "type": "qa",
-    "prompt": "Как срезать первые три элемента списка a? (a[0:3] / a[:3] / a[1:3])",
-    "answer_spec": "a[:3]",
-    "difficulty": 2,
-    "tags": []
+    "prompt": "Как получить длину массива?",
+    "answer_spec": "len",
+    "difficulty": 1,
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_020",
-    "module": "programming",
-    "topic": "oop",
+    "module": "Python",
+    "topic": "Массивы",
     "type": "qa",
-    "prompt": "Как называется функция внутри класса?",
-    "answer_spec": "метод",
+    "prompt": "Какой метод сортирует массив по возрастанию?",
+    "answer_spec": "sort",
     "difficulty": 1,
-    "tags": []
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_021",
-    "module": "programming",
-    "topic": "syntax",
+    "module": "Python",
+    "topic": "Массивы",
     "type": "qa",
-    "prompt": "Что делает функция strip()?",
-    "answer_spec": "режет",
+    "prompt": "Как вырезать часть массива?",
+    "answer_spec": "slice",
     "difficulty": 1,
-    "tags": []
+    "tags": [
+      "ai-generated"
+    ]
   },
   {
     "id": "py_022",
-    "module": "programming",
-    "topic": "sql",
+    "module": "Python",
+    "topic": "Массивы",
     "type": "qa",
-    "prompt": "Какой ключевое слово используется для выбора данных?",
-    "answer_spec": "SELECT",
+    "prompt": "Какой оператор проверяет наличие элемента в массиве?",
+    "answer_spec": "in",
     "difficulty": 1,
     "tags": [
       "ai-generated"
@@ -223,11 +265,11 @@
   },
   {
     "id": "py_023",
-    "module": "programming",
-    "topic": "sql",
+    "module": "Python",
+    "topic": "Массивы",
     "type": "qa",
-    "prompt": "Какой оператор сортирует результаты запроса?",
-    "answer_spec": "ORDER BY",
+    "prompt": "Как создать массив из последовательности чисел?",
+    "answer_spec": "list",
     "difficulty": 1,
     "tags": [
       "ai-generated"
@@ -235,11 +277,11 @@
   },
   {
     "id": "py_024",
-    "module": "programming",
-    "topic": "sql",
+    "module": "Python",
+    "topic": "Массивы",
     "type": "qa",
-    "prompt": "Какой оператор используется для фильтрации строк?",
-    "answer_spec": "WHERE",
+    "prompt": "Какой метод объединяет два массива?",
+    "answer_spec": "extend",
     "difficulty": 1,
     "tags": [
       "ai-generated"
@@ -247,23 +289,11 @@
   },
   {
     "id": "py_025",
-    "module": "programming",
-    "topic": "sql",
+    "module": "Python",
+    "topic": "Массивы",
     "type": "qa",
-    "prompt": "Как называется команда создания новой таблицы?",
-    "answer_spec": "CREATE TABLE",
-    "difficulty": 1,
-    "tags": [
-      "ai-generated"
-    ]
-  },
-  {
-    "id": "py_026",
-    "module": "programming",
-    "topic": "sql",
-    "type": "qa",
-    "prompt": "Какой оператор удаляет записи из таблицы?",
-    "answer_spec": "DELETE",
+    "prompt": "Как изменить элемент по индексу?",
+    "answer_spec": "assignment",
     "difficulty": 1,
     "tags": [
       "ai-generated"
